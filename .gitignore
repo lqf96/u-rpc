@@ -1,0 +1,10 @@
+# macOS files
+.DS_Store
+._*
+__MACOSX
+
+# Python files
+*.pyc
+__pycache__
+# C/C++ files
+*.o
