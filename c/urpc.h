@@ -35,8 +35,8 @@ typedef struct urpc_vary {
     void* data;
 } urpc_vary_t;
 
-//u-RPC buffer type
-typedef struct __urpc_buf {
+//u-RPC stream and buffer type
+typedef struct __urpc_stream {
     //Buffer
     uint8_t* buffer;
     //Position of next available byte
@@ -69,10 +69,10 @@ typedef struct urpc {
     //Function allocation table
     void* _funcs_store;
 
-    //Send buffer
-    __urpc_stream_t _send_buf;
-    //Receive buffer
-    __urpc_stream_t _recv_buf;
+    //Send stream
+    __urpc_stream_t _send_stream;
+    //Receive stream
+    __urpc_stream_t _recv_stream;
 
     //Send function closure data
     void* _send_func_data;
