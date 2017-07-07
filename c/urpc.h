@@ -105,10 +105,8 @@ const urpc_type_t URPC_TYPE_I64 = 0x06;
 const urpc_type_t URPC_TYPE_U64 = 0x07;
 //Variable length data
 const urpc_type_t URPC_TYPE_VARY = 0x08;
-//Remote object handle
-const urpc_type_t URPC_TYPE_OBJ = 0x09;
 //Callback handle
-const urpc_type_t URPC_TYPE_CALLBACK = 0x0a;
+const urpc_type_t URPC_TYPE_CALLBACK = 0x09;
 
 //Operation successfully completed
 const urpc_status_t URPC_OK = 0x00;

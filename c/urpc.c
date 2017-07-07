@@ -40,7 +40,6 @@ const static uint8_t urpc_type_size[] = {
     8, //URPC_TYPE_I64
     8, //URPC_TYPE_U64
     0, //URPC_TYPE_VARY
-    2, //URPC_TYPE_OBJ
     2 //URPC_TYPE_FUNC
 };
 //u-RPC message handlers
@@ -77,7 +76,7 @@ static urpc_status_t urpc_alloc_mem(
  * @param size Size of the data
  * @returns Operation status code
  */
-static urpc_status_t urpc_write_vary(
+static inline urpc_status_t urpc_write_vary(
     urpc_stream_t* stream,
     const void* data,
     uint8_t size
@@ -116,7 +115,7 @@ static inline urpc_status_t urpc_write_data(
  * @param size Size of the data
  * @return Operation status code
  */
-static urpc_status_t urpc_read_vary(
+static inline urpc_status_t urpc_read_vary(
     urpc_stream_t* stream,
     void* data,
     size_t size
@@ -172,7 +171,6 @@ static urpc_status_t urpc_marshall(
         const void* arg = args[i];
 
         switch (type) {
-            case URPC_TYPE_OBJ:
             case URPC_TYPE_CALLBACK:
                 return URPC_ERR_NO_SUPPORT;
             //Variable length data

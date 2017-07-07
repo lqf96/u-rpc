@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 from io import BytesIO
-import struct, weakref
+import struct
 
 # u-RPC protocol version
 URPC_VERSION = 0
@@ -36,10 +36,8 @@ URPC_TYPE_I64 = 0x06
 URPC_TYPE_U64 = 0x07
 # Variable length data
 URPC_TYPE_VARY = 0x08
-# Remote object handle
-URPC_TYPE_OBJ = 0x09
 # Callback handle
-URPC_TYPE_CALLBACK = 0x0a
+URPC_TYPE_CALLBACK = 0x09
 
 # Operation successfully completed
 URPC_OK = 0x00
@@ -113,12 +111,6 @@ class URPC(object):
         # Function name and handle lookups (Bidirectional)
         self._name_lookup = {}
         self._rev_name_lookup = {}
-        # Objects store (Handle to object reference lookup)
-        self._objects_begin = 0
-        self._objects_size = n_objs
-        self._objects_store = [_URPCSlot(i) for i in range(1, n_objs+1)]
-        # Object reference to handle lookup
-        self._objects_lookup = {}
         # Message ID counter
         self._counters = {"send": 0, "recv": 0}
         # Send data callback
@@ -173,12 +165,6 @@ class URPC(object):
             # Variable length data
             if obj_type==URPC_TYPE_VARY:
                 write_vary(stream, obj)
-            # Remote object
-            elif obj_type==URPC_TYPE_OBJ:
-                handle = self._objects_lookup.get(weakref.ref(obj))
-                if not handle:
-                    handle = self.add_object(obj)
-                write_data(stream, handle, URPC_TYPE_U16)
             # TODO: Callback (currently not supported)
             elif obj_type==URPC_TYPE_CALLBACK:
                 raise URPCError(URPC_ERR_NO_SUPPORT)
@@ -200,13 +186,6 @@ class URPC(object):
             # Read argument
             if obj_type==URPC_TYPE_VARY:
                 obj = read_vary(stream)
-            # Remote object
-            elif obj_type==URPC_TYPE_OBJ:
-                obj = read_data(stream, URPC_TYPE_OBJ)
-                obj_ref = list_get(self._objects_store, obj)
-                if isinstance(obj_ref, _URPCSlot):
-                    raise URPCError(URPC_ERR_NONEXIST)
-                obj = obj_ref()
             # TODO: Callback (currently not supported)
             elif obj_type==URPC_TYPE_CALLBACK:
                 raise URPCError(URPC_ERR_NO_SUPPORT)
@@ -372,50 +351,6 @@ class URPC(object):
         # Update next available item
         self._funcs_store[handle] = _URPCSlot(self._funcs_begin)
         self._funcs_begin = handle
-    def add_object(self, obj):
-        """
-        Add an object to u-RPC instance.
-        The URPC instance keeps a weak reference of the object,
-        so it does not affect the garbage collection of the object.
-        When the object no longer exists,
-        the corresponding slot is automatically released.
-
-        :param obj: Object to be added
-        :returns: Handle for the object
-        :raises URPCError: If there is no more space for the object
-        """
-        handle = self._objects_begin
-        # Objects store is full
-        if handle==self._objects_size:
-            raise URPCError(URPC_ERR_STORE_FULL)
-        # Update next available item
-        self._objects_begin = self._objects_store[handle].next_slot
-        # Get weak reference of the object
-        def finalize_callback(obj_ref):
-            if self._objects_store[handle]==obj_ref:
-                self.remove_object(handle)
-        obj_ref = weakref.ref(obj, finalize_callback)
-        # Add object to object store and lookup
-        self._objects_store[handle] = obj_ref
-        self._objects_lookup[obj_ref] = handle
-        # Return handle
-        return handle
-    def remove_object(self, handle):
-        """
-        Remove an object from u-RPC instance by handle.
-
-        :param handle: Handle for the object
-        :raises URPCError: If the handle does not correspond to an object
-        """
-        obj_ref = self._objects_store[handle]
-        # Attempt to remove nonexistant handle
-        if isinstance(obj_ref, _URPCSlot):
-            raise URPCError(URPC_ERR_NONEXIST)
-        # Remove reference from object lookup
-        del self._objects_lookup[obj_ref]
-        # Update next available item of object store
-        self._objects_store[handle] = _URPCSlot(self._objects_begin)
-        self._objects_begin = handle
     def call(self, handle, sig_args, args, callback):
         """
         Do u-RPC call.
@@ -470,7 +405,6 @@ _urpc_type_repr = [
     "l", # URPC_TYPE_I64
     "L", # URPC_TYPE_U64
     None, # URPC_TYPE_VARY
-    "H", # URPC_TYPE_OBJ
     "H", # URPC_TYPE_FUNC
 ]
 # u-RPC type to size mapping
@@ -484,6 +418,5 @@ _urpc_type_size = [
     8, # URPC_TYPE_I64
     8, # URPC_TYPE_U64
     None, # URPC_TYPE_VARY
-    2, # URPC_TYPE_OBJ
     2, # URPC_TYPE_FUNC
 ]
