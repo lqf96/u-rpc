@@ -1,38 +1,109 @@
-from collections import Container
-from urpc.core import URPCError, URPC_ERR_SIG_INCORRECT
+from __future__ import unicode_literals
+from collections import Iterator, Sequence, namedtuple
+from six.moves import range
 
-def urpc_func(sig_args, sig_rets, func=None):
-    """
-    Wrap a Python function as a u-RPC function.
+# Spare table item error prompt
+PROMPT_ERR_SPARE_TABLE_ITEM = "Index does correspond to any value."
+# Allocation table is full
+PROMPT_ERR_TABLE_FULL = "The table is full."
 
-    :param sig_args: Arguments signature
-    :param sig_rets: Result signature
-    :param func: Function to wrap
-    :returns: u-RPC wrapper function
+# Allocation table item
+_AllocTableItem = namedtuple("_AllocTableItem", ["spare", "next", "data"])
+
+class AllocTable(Sequence):
+    """ The allocation table data structure. """
+    def __init__(self, capacity):
+        """
+        Initialize the allocation table.
+
+        :param capacity: Maximum size of the allocation table
+        """
+        # Capacity and number of elements
+        self._capacity = capacity
+        self._size = 0
+        # Begin of the spare table items linked list
+        self._spare_begin = 0
+        # Internal data store
+        self._store = [_AllocTableItem(True, i, None) for i in range(1, i+1)]
+    def __len__(self):
+        """
+        Get number of elements in the table.
+        """
+        return self._size
+    def __getitem__(self, index):
+        """
+        Get value by index.
+
+        :param index: Index of the value
+        :returns: The value
+        """
+        item = self._store[index]
+        # Spare table item
+        if item.spare:
+            raise IndexError(PROMPT_ERR_SPARE_TABLE_ITEM)
+        # Return data
+        return item.data
+    def __setitem__(self, index, value):
+        """
+        Set value by index.
+
+        :param index: Index of the value
+        :param value: New value to set
+        """
+        item = self._store[index]
+        # Spare table item
+        if item.spare:
+            raise IndexError(PROMPT_ERR_SPARE_TABLE_ITEM)
+        # Set data
+        item._replace(data=value)
+    def __delitem__(self, index):
+        """
+        Remove a value from the table by its index.
+
+        :param index: Index of the value
+        """
+        item = self._store[index]
+        # Spare table item
+        if item.spare:
+            raise IndexError(PROMPT_ERR_SPARE_TABLE_ITEM)
+        # Update next spare item
+        self._store[index] = _AllocTableItem(True, self._spare_begin, None)
+        self._spare_begin = index
+        # Update size
+        self._size -= 1
+    def add(self, value):
+        """
+        Add a value to the table and return its corresponding index.
+
+        :param value: Value to be added
+        :returns: Index of the value
+        """
+        # Store is full
+        if self._size>=self._capacity:
+            raise MemoryError(PROMPT_ERR_TABLE_FULL)
+        # Next spare item
+        index = self._spare_begin
+        # Update next spare table item
+        self._spare_begin = self._store[handle].next
+        self._store[index] = _AllocTableItem(False, None, value)
+        # Update size
+        self._size += 1
+        # Return corresponding index
+        return index
+
+def seq_get(seq, index, default=None):
     """
-    # Decorator form
-    if not func:
-        return lambda _func: urpc_func(sig_args, sig_rets, _func)
-    # Convert signature to byte array
-    sig_args = bytearray(sig_args)
-    if not isinstance(sig_rets, Container):
-        sig_rets = [sig_rets]
-    sig_rets = bytearray(sig_rets)
-    # u-RPC wrapper function
-    def wrapper(_sig_args, args):
-        # Check arguments type
-        if sig_args!=_sig_args:
-            raise URPCError(URPC_ERR_SIG_INCORRECT)
-        # Call function
-        try:
-            result = func(*args)
-        except TypeError:
-            raise URPCError(URPC_ERR_SIG_INCORRECT)
-        # Check number of result values
-        if not isinstance(result, tuple):
-            result = (result,)
-        if len(result)!=len(sig_rets)
-            raise URPCError(URPC_ERR_SIG_INCORRECT)
-        # Return result with signature
-        return sig_rets, result
-    return wrapper
+    Get element from sequence by index.
+    Fallback to default if index is out of range.
+
+    :param seq: Sequence
+    :param index: Index of the element
+    :param default: Fallback default value
+    :returns Element if index is valid, otherwise default value
+    """
+    # Valid index
+    if isinstance(index, int) and index>=0 and index<len(seq):
+        return seq[index]
+    # Fallback to default value
+    else:
+        return default

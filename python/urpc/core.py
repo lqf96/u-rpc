@@ -1,6 +1,9 @@
 from __future__ import unicode_literals
-from io import BytesIO
 import struct
+from io import BytesIO
+from bidict import bidict
+
+from urpc.util import AllocTable, seq_get
 
 # u-RPC protocol version
 URPC_VERSION = 0
@@ -48,7 +51,7 @@ URPC_ERR_NONEXIST = 0x02
 # Operation not supported
 URPC_ERR_NO_SUPPORT = 0x03
 # Store is full
-URPC_ERR_STORE_FULL = 0x04
+URPC_ERR_NO_MEMORY = 0x04
 # Broken u-RPC message
 URPC_ERR_BROKEN_MSG = 0x05
 # Function call throws exception
@@ -57,6 +60,13 @@ URPC_ERR_EXCEPTION = 0x06
 URPC_ERR_TOO_LONG = 0x07
 
 def read_data(stream, urpc_type):
+    """
+    Read data of given type from stream.
+
+    :param stream: Data stream
+    :param urpc_type: u-RPC data type
+    :returns: Read data in given type
+    """
     return struct.unpack(
         _urpc_type_repr[urpc_type],
         stream.read(_urpc_type_size[urpc_type])
@@ -74,12 +84,25 @@ def read_vary(stream):
     return bytearray(stream.read(data_size))
 
 def write_data(stream, data, urpc_type):
+    """
+    Write data of given type to stream.
+
+    :param stream: Data stream
+    :param urpc_type: u-RPC data type
+    """
     stream.write(struct.pack(
         _urpc_type_repr[urpc_type],
         data
     ))
 
 def write_vary(stream, data):
+    """
+    Write variable length data to stream.
+    The data should not be longer than 2^8 bytes.
+
+    :param stream: Data stream
+    :returns: Data in byte array
+    """
     data_size = len(data)
     # Data length check
     if data_size>=2**8:
@@ -88,29 +111,29 @@ def write_vary(stream, data):
     stream.write(bytearray([data_size]))
     stream.write(bytearray(data))
 
-def list_get(l, index, default=None):
-    if isinstance(index, int) and index>=0 and index<len(l):
-        return l[index]
-    else:
-        return default
-
-class _URPCSlot(object):
-    def __init__(self, next_slot):
-        self.next_slot = next_slot
-
 class URPCError(BaseException):
+    """ u-RPC error class. """
     def __init__(self, reason):
+        """
+        u-RPC error type constructor.
+
+        :param reason: Reason of the error.
+        """
         self.reason = reason
 
 class URPC(object):
-    def __init__(self, send_callback, n_funcs=256, n_objs=256):
-        # Functions store (Handle to function lookup)
-        self._funcs_begin = 0
-        self._funcs_size = n_funcs
-        self._funcs_store = [_URPCSlot(i) for i in range(1, n_funcs+1)]
-        # Function name and handle lookups (Bidirectional)
-        self._name_lookup = {}
-        self._rev_name_lookup = {}
+    """ u-RPC endpoint class. """
+    def __init__(self, send_callback, n_funcs=256):
+        """
+        u-RPC endpoint class constructor.
+
+        :param send_callback: Function for sending data
+        :param n_funcs: Maximum number of functions in store
+        """
+        # Functions store (Handle to function mapping)
+        self._funcs_store = AllocTable(n_funcs)
+        # Function name to handle mapping
+        self._func_name_lookup = bidict()
         # Message ID counter
         self._counters = {"send": 0, "recv": 0}
         # Send data callback
@@ -136,18 +159,6 @@ class URPC(object):
         self._counters[counter] += 1
         if self._counters[counter]>=2**16:
             self._counters[counter] = 0
-        return res
-    def _build_error_msg(self, msg_id, error_code):
-        """
-        Build an error message with given error code.
-
-        :param error_code: Error code
-        :returns: Error message stream
-        """
-        res = self._build_header(URPC_MSG_ERROR, "recv")
-        # Write request message ID and error code
-        write_data(res, msg_id, URPC_TYPE_U16)
-        write_data(res, error_code, URPC_TYPE_U16)
         return res
     def _marshall(self, stream, sig, objects):
         """
@@ -231,7 +242,12 @@ class URPC(object):
             return msg_handler(self, req, msg_id)
         # URPC error occured
         except URPCError as e:
-            return self._build_error_msg(msg_id, e.reason)
+            res = self._build_header(URPC_MSG_ERROR, "recv")
+            # Write request message ID and error code
+            write_data(res, msg_id, URPC_TYPE_U16)
+            write_data(res, error_code, URPC_TYPE_U16)
+            # Return stream
+            return res
     def _handle_error(self, res, msg_id):
         """
         u-RPC error result handler.
@@ -281,8 +297,8 @@ class URPC(object):
         sig_args = read_vary(req)
         args = self._unmarshall(req, sig_args)
         # Lookup for function in store
-        func = self._funcs_store[handle]
-        if not func or isinstance(func, _URPCSlot):
+        func = seq_get(self._funcs_store, handle)
+        if not func:
             raise URPCError(URPC_ERR_NONEXIST)
         # Call function
         sig_rets, result = func(sig_args, args)
@@ -319,17 +335,11 @@ class URPC(object):
         :returns: Handle for the object
         :raises URPCError: If there is no more space for the function
         """
-        handle = self._funcs_begin
-        # Functions store is full
-        if handle==self._funcs_size:
-            raise URPCError(URPC_ERR_STORE_FULL)
-        # Add function to store and update next available item
-        self._funcs_begin = self._funcs_store[handle].next_slot
-        self._funcs_store[handle] = func
-        # Add function to name lookup tables
+        # Add function to functions store
+        handle = self._funcs_store.add(func)
+        # Add function to name lookup
         if name:
-            self._name_lookup[name] = handle
-            self._rev_name_lookup[handle] = name
+            self._func_name_lookup[name] = handle
         # Return handle
         return handle
     def remove_func(self, handle):
@@ -339,18 +349,11 @@ class URPC(object):
         :param handle: Handle for the function
         :raises URPCError: If the handle does not correspond to a function
         """
-        func = self._funcs_store[handle]
-        # Attempt to remove nonexistant handle
-        if not func or isinstance(obj_ref, _URPCSlot):
-            raise URPCError(URPC_ERR_NONEXIST)
-        # Remove function from name lookup tables
-        name = self._rev_name_lookup.get(handle)
-        if name:
-            del self._name_lookup[name]
-            del self._rev_name_lookup[handle]
-        # Update next available item
-        self._funcs_store[handle] = _URPCSlot(self._funcs_begin)
-        self._funcs_begin = handle
+        # Remove function from functions store
+        del self._funcs_store[handle]
+        # Remove function from name lookup
+        if handle in self._func_name_lookup.inv:
+            del self._func_name_lookup.inv[handle]
     def call(self, handle, sig_args, args, callback):
         """
         Do u-RPC call.

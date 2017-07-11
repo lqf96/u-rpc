@@ -6,5 +6,7 @@ __MACOSX
 # Python files
 *.pyc
 __pycache__
+# Virtual environment
+venv
 # C/C++ files
 *.o

@@ -8,5 +8,6 @@ setup(
     author_email="lqf.1996121@gmail.com",
     description="The u-RPC Remote Procedure Call framework",
     license="MIT",
-    packages=["urpc"]
+    packages=["urpc"],
+    install_requires=["six", "bidict"]
 )
