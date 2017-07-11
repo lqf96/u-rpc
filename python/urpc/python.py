@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from collections import Container
 from abc import ABCMeta, abstractmethod
 from six import text_type, with_metaclass
