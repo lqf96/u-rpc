@@ -1,10 +1,17 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
+//Use WIO or WIO shim
+#ifdef URPC_USE_WIO
+#include <wio.h>
+#else
+#include "wio-shim.h"
 #endif
 
 //u-RPC version 0
@@ -12,8 +19,6 @@ extern "C" {
 //u-RPC function signature builder
 #define URPC_SIG(n_objs, ...) ((urpc_type_t[]){n_objs, __VA_ARGS__})
 
-//Operation status code type
-typedef uint8_t urpc_status_t;
 //Message type
 typedef uint8_t urpc_msg_t;
 //Data type type
@@ -24,8 +29,13 @@ typedef uint16_t urpc_func_t;
 typedef uint16_t urpc_obj_t;
 //Signature type
 typedef uint8_t* urpc_sig_t;
+
+//Status code type
+typedef wio_status_t urpc_status_t;
 //Callback type
-typedef void (*urpc_callback_t)(void*, urpc_status_t, void*);
+typedef wio_callback_t urpc_callback_t;
+//u-RPC stream & buffer type
+typedef wio_buf_t __urpc_stream_t;
 
 //u-RPC variable length data container type
 typedef struct urpc_vary {
@@ -34,16 +44,6 @@ typedef struct urpc_vary {
     //Pointer to data
     void* data;
 } urpc_vary_t;
-
-//u-RPC stream and buffer type
-typedef struct __urpc_stream {
-    //Buffer
-    uint8_t* buffer;
-    //Position of next available byte
-    size_t pos;
-    //Send buffer size
-    size_t size;
-} __urpc_stream_t;
 
 //u-RPC callback pair type
 typedef struct __urpc_cb_pair {
@@ -71,8 +71,8 @@ typedef struct urpc {
 
     //Send stream
     __urpc_stream_t _send_stream;
-    //Receive stream
-    __urpc_stream_t _recv_stream;
+    //Temporary stream for memory allocation
+    __urpc_stream_t _tmp_stream;
 
     //Send function closure data
     void* _send_func_data;
@@ -81,10 +81,8 @@ typedef struct urpc {
 
     //Callback pairs
     __urpc_cb_pair_t* _cb_list;
-    //Number of callback pairs
+    //Capacity of callback pairs
     size_t _cb_size;
-    //Maximum amount of callback pairs
-    size_t _cb_max;
 } urpc_t;
 
 //Signed 8-bit data
@@ -108,20 +106,18 @@ const urpc_type_t URPC_TYPE_VARY = 0x08;
 //Callback handle
 const urpc_type_t URPC_TYPE_CALLBACK = 0x09;
 
-//Operation successfully completed
-const urpc_status_t URPC_OK = 0x00;
 //Incorrect function signature
-const urpc_status_t URPC_ERR_SIG_INCORRECT = 0x01;
+const urpc_status_t URPC_ERR_SIG_INCORRECT = 0x20;
 //Nonexist handle
-const urpc_status_t URPC_ERR_NONEXIST = 0x02;
+const urpc_status_t URPC_ERR_NONEXIST = 0x21;
 //Operation not supported
-const urpc_status_t URPC_ERR_NO_SUPPORT = 0x03;
+const urpc_status_t URPC_ERR_NO_SUPPORT = 0x22;
 //Out of memory; message too long
-const urpc_status_t URPC_ERR_NO_MEMORY = 0x04;
+const urpc_status_t URPC_ERR_NO_MEMORY = 0x23;
 //Broken u-RPC message
-const urpc_status_t URPC_ERR_BROKEN_MSG = 0x05;
+const urpc_status_t URPC_ERR_BROKEN_MSG = 0x24;
 //Function call throws exception
-const urpc_status_t URPC_ERR_EXCEPTION = 0x06;
+const urpc_status_t URPC_ERR_EXCEPTION = 0x25;
 
 //Error message
 const urpc_msg_t URPC_MSG_ERROR = 0x00;
@@ -134,21 +130,23 @@ const urpc_msg_t URPC_MSG_CALL = 0x03;
 //Function call result message
 const urpc_msg_t URPC_MSG_CALL_RESULT = 0x04;
 
-//TODO: Init function
+/**
+ * Initialize u-RPC instance.
+ */
+extern urpc_status_t urpc_init(
+    urpc_t* self,
+    size_t funcs_size,
+    size_t send_buf_size,
+    size_t tmp_buf_size,
+    void* send_func_data,
+    urpc_status_t (*send_func)(void*, uint8_t*, size_t),
+    size_t cb_size
+);
 
 /**
  * Callback function for incoming u-RPC messages.
- *
- * @param self u-RPC instance
- * @param data Incoming data
- * @param size Size of the data
- * @return Operation status code
  */
-extern urpc_status_t urpc_on_recv(
-    urpc_t* self,
-    const char* data,
-    size_t size
-);
+extern WIO_CALLBACK(urpc_on_recv);
 
 /**
  * Get handle of remote function
