@@ -1,125 +1,16 @@
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 import struct
 from io import BytesIO
 from bidict import bidict
 
-from urpc.util import AllocTable, seq_get
+from urpc.constants import *
+from urpc.util import AllocTable, seq_get, read_data, read_vary, write_data, write_vary
+from urpc.python import URPCError, urpc_wrap
 
 # u-RPC protocol version
 URPC_VERSION = 0
 # u-RPC magic ("ur")
 URPC_MAGIC = 29301
-
-# Error message
-URPC_MSG_ERROR = 0
-# Function query message
-URPC_MSG_FUNC_QUERY = 1
-# Function query response message
-URPC_MSG_FUNC_RESP = 2
-# Function call message
-URPC_MSG_CALL = 3
-# Function call result message
-URPC_MSG_CALL_RESULT = 4
-
-# Signed 8-bit data
-URPC_TYPE_I8 = 0x00
-# Unsigned 8-bit data
-URPC_TYPE_U8 = 0x01
-# Signed 16-bit data
-URPC_TYPE_I16 = 0x02
-# Signed 8-bit data
-URPC_TYPE_U16 = 0x03
-# Signed 32-bit data
-URPC_TYPE_I32 = 0x04
-# Unsigned 32-bit data
-URPC_TYPE_U32 = 0x05
-# Signed 64-bit data
-URPC_TYPE_I64 = 0x06
-# Unsigned 64-bit data
-URPC_TYPE_U64 = 0x07
-# Variable length data
-URPC_TYPE_VARY = 0x08
-# Callback handle
-URPC_TYPE_CALLBACK = 0x09
-
-# Operation successfully completed
-URPC_OK = 0x00
-# Incorrect function signature
-URPC_ERR_SIG_INCORRECT = 0x01
-# Nonexist handle
-URPC_ERR_NONEXIST = 0x02
-# Operation not supported
-URPC_ERR_NO_SUPPORT = 0x03
-# Store is full
-URPC_ERR_NO_MEMORY = 0x04
-# Broken u-RPC message
-URPC_ERR_BROKEN_MSG = 0x05
-# Function call throws exception
-URPC_ERR_EXCEPTION = 0x06
-# Data too long
-URPC_ERR_TOO_LONG = 0x07
-
-def read_data(stream, urpc_type):
-    """
-    Read data of given type from stream.
-
-    :param stream: Data stream
-    :param urpc_type: u-RPC data type
-    :returns: Read data in given type
-    """
-    return struct.unpack(
-        _urpc_type_repr[urpc_type],
-        stream.read(_urpc_type_size[urpc_type])
-    )[0]
-
-def read_vary(stream):
-    """
-    Read variable length data from stream.
-    The data should have a 1-byte size, followed by bytes of that size.
-
-    :param stream: Data stream
-    :returns: Data in byte array
-    """
-    data_size = ord(stream.read(1))
-    return bytearray(stream.read(data_size))
-
-def write_data(stream, data, urpc_type):
-    """
-    Write data of given type to stream.
-
-    :param stream: Data stream
-    :param urpc_type: u-RPC data type
-    """
-    stream.write(struct.pack(
-        _urpc_type_repr[urpc_type],
-        data
-    ))
-
-def write_vary(stream, data):
-    """
-    Write variable length data to stream.
-    The data should not be longer than 2^8 bytes.
-
-    :param stream: Data stream
-    :returns: Data in byte array
-    """
-    data_size = len(data)
-    # Data length check
-    if data_size>=2**8:
-        raise URPCError(URPC_ERR_TOO_LONG)
-    # Write to stream
-    stream.write(bytearray([data_size]))
-    stream.write(bytearray(data))
-
-class URPCError(BaseException):
-    """ u-RPC error class. """
-    def __init__(self, reason):
-        """
-        u-RPC error type constructor.
-
-        :param reason: Reason of the error.
-        """
-        self.reason = reason
 
 class URPC(object):
     """ u-RPC endpoint class. """
@@ -176,9 +67,6 @@ class URPC(object):
             # Variable length data
             if obj_type==URPC_TYPE_VARY:
                 write_vary(stream, obj)
-            # TODO: Callback (currently not supported)
-            elif obj_type==URPC_TYPE_CALLBACK:
-                raise URPCError(URPC_ERR_NO_SUPPORT)
             # Value types
             else:
                 write_data(stream, obj, obj_type)
@@ -197,9 +85,6 @@ class URPC(object):
             # Read argument
             if obj_type==URPC_TYPE_VARY:
                 obj = read_vary(stream)
-            # TODO: Callback (currently not supported)
-            elif obj_type==URPC_TYPE_CALLBACK:
-                raise URPCError(URPC_ERR_NO_SUPPORT)
             else:
                 obj = read_data(stream, obj_type)
             objects.append(obj)
@@ -326,7 +211,7 @@ class URPC(object):
         result = self._unmarshall(res, sig_rets)
         # Invoke callback
         self._invoke_callback(req_msg_id, result)
-    def add_func(self, func, name=None):
+    def add_func(self, func, arg_types=None, ret_types=None, name=None):
         """
         Add a function to u-RPC instance.
 
@@ -335,6 +220,12 @@ class URPC(object):
         :returns: Handle for the object
         :raises URPCError: If there is no more space for the function
         """
+        # Arguments and results types
+        arg_types = arg_types or getattr(func, "__urpc_arg_types", None)
+        ret_types = ret_types or getattr(func, "__urpc_ret_types", None)
+        # Wrap Python function as u-RPC function
+        if arg_types and ret_types:
+            func = urpc_wrap(arg_types, ret_types, func)
         # Add function to functions store
         handle = self._funcs_store.add(func)
         # Add function to name lookup
