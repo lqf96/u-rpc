@@ -37,6 +37,15 @@ typedef wio_callback_t urpc_callback_t;
 //u-RPC stream & buffer type
 typedef wio_buf_t __urpc_stream_t;
 
+//Send function type
+typedef urpc_status_t (*urpc_send_func_t)(
+    void*,
+    uint8_t*,
+    uint16_t,
+    void*,
+    urpc_callback_t
+);
+
 //u-RPC variable length data container type
 typedef struct urpc_vary {
     //Size of data
@@ -77,7 +86,7 @@ typedef struct urpc {
     //Send function closure data
     void* _send_func_data;
     //Send function
-    urpc_status_t (*_send_func)(void*, uint8_t*, size_t);
+    urpc_send_func_t _send_func;
 
     //Callback pairs
     __urpc_cb_pair_t* _cb_list;
@@ -139,7 +148,7 @@ extern urpc_status_t urpc_init(
     size_t send_buf_size,
     size_t tmp_buf_size,
     void* send_func_data,
-    urpc_status_t (*send_func)(void*, uint8_t*, size_t),
+    urpc_send_func_t send_func,
     size_t cb_size
 );
 

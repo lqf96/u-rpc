@@ -240,40 +240,6 @@ static urpc_status_t urpc_invoke_callback(
     return URPC_ERR_BROKEN_MSG;
 }
 
-/**
- * {@inheritDoc}
- */
-WIO_CALLBACK(urpc_on_recv) {
-    //Temporary variable
-    uint8_t tmp_u8;
-    uint16_t tmp_u16;
-
-    //Self
-    urpc_t* self = (urpc_t*)data;
-    //Message stream
-    urpc_stream_t* msg_stream = (urpc_stream_t*)result;
-
-    //Error occured when receiving
-    if (status)
-        return status;
-
-    //Read and compare magic
-    WIO_TRY(wio_read(msg_stream, &tmp_u16, 2))
-    if (tmp_u16!=urpc_magic)
-        return URPC_ERR_BROKEN_MSG;
-    //Read and compare version
-    WIO_TRY(wio_read(msg_stream, &tmp_u8, 1))
-    if (tmp_u8!=urpc_version)
-        return URPC_ERR_NO_SUPPORT;
-
-    //Read message ID and type
-    WIO_TRY(wio_read(msg_stream, &tmp_u16, 2))
-    WIO_TRY(wio_read(msg_stream, &tmp_u8, 1))
-    //Invoke corresponding message handler
-    urpc_msg_handler_t handler = urpc_msg_handlers[tmp_u8];
-    return handler(self, msg_stream, tmp_u16);
-}
-
 static urpc_status_t urpc_handle_error(
     urpc_t* self,
     urpc_stream_t* msg_stream,
@@ -338,6 +304,18 @@ static urpc_status_t urpc_handle_call_result(
 }
 
 /**
+ * u-RPC after send callback
+ */
+static WIO_CALLBACK(urpc_after_send) {
+    urpc_t* self = (urpc_t*)data;
+
+    //Clear send stream
+    WIO_TRY(wio_reset(&self->_send_stream))
+
+    return WIO_OK;
+}
+
+/**
  * {@inheritDoc}
  */
 urpc_status_t urpc_init(
@@ -346,7 +324,7 @@ urpc_status_t urpc_init(
     size_t send_buf_size,
     size_t tmp_buf_size,
     void* send_func_data,
-    urpc_status_t (*send_func)(void*, uint8_t*, size_t),
+    urpc_send_func_t send_func,
     size_t cb_size
 ) {
     //Send and temporary buffer
@@ -391,6 +369,40 @@ urpc_status_t urpc_init(
 /**
  * {@inheritDoc}
  */
+WIO_CALLBACK(urpc_on_recv) {
+    //Temporary variable
+    uint8_t tmp_u8;
+    uint16_t tmp_u16;
+
+    //Self
+    urpc_t* self = (urpc_t*)data;
+    //Message stream
+    urpc_stream_t* msg_stream = (urpc_stream_t*)result;
+
+    //Error occured when receiving
+    if (status)
+        return status;
+
+    //Read and compare magic
+    WIO_TRY(wio_read(msg_stream, &tmp_u16, 2))
+    if (tmp_u16!=urpc_magic)
+        return URPC_ERR_BROKEN_MSG;
+    //Read and compare version
+    WIO_TRY(wio_read(msg_stream, &tmp_u8, 1))
+    if (tmp_u8!=urpc_version)
+        return URPC_ERR_NO_SUPPORT;
+
+    //Read message ID and type
+    WIO_TRY(wio_read(msg_stream, &tmp_u16, 2))
+    WIO_TRY(wio_read(msg_stream, &tmp_u8, 1))
+    //Invoke corresponding message handler
+    urpc_msg_handler_t handler = urpc_msg_handlers[tmp_u8];
+    return handler(self, msg_stream, tmp_u16);
+}
+
+/**
+ * {@inheritDoc}
+ */
 urpc_status_t urpc_get_func(
     urpc_t* self,
     const char* name,
@@ -410,7 +422,14 @@ urpc_status_t urpc_get_func(
 
     //Set callback data and function
     WIO_TRY(urpc_add_callback(self, msg_id, cb_data, cb))
-    //TODO: Send data
+    //Send data
+    WIO_TRY(self->_send_func(
+        self->_send_func_data,
+        send_stream->buffer,
+        send_stream->pos_b,
+        self,
+        urpc_after_send
+    ))
 
     return WIO_OK;
 }
@@ -439,7 +458,14 @@ urpc_status_t urpc_call(
 
     //Set callback data and callback function
     WIO_TRY(urpc_add_callback(self, msg_id, cb_data, cb))
-    //TODO: Send data
+    //Send data
+    WIO_TRY(self->_send_func(
+        self->_send_func_data,
+        send_stream->buffer,
+        send_stream->pos_b,
+        self,
+        urpc_after_send
+    ))
 
     return WIO_OK;
 }
