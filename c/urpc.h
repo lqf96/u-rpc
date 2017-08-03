@@ -6,13 +6,7 @@ extern "C" {
 
 #include <stddef.h>
 #include <stdint.h>
-
-//Use WIO or WIO shim
-#ifdef URPC_USE_WIO
-#include <wio.h>
-#else
 #include "wio-shim.h"
-#endif
 
 //u-RPC version 0
 #define URPC_VERSION 0
