@@ -11,11 +11,22 @@
 //Callback declaration helper
 #define WIO_CALLBACK(name) \
     wio_status_t name(void* data, wio_status_t status, void* result)
+//Variable length data helper
+#define WIO_VARY(size, data) \
+    &((wio_vary_t){data, size})
 
 //WIO status code type
 typedef uint8_t wio_status_t;
 //WIO callback type
 typedef wio_status_t (*wio_callback_t)(void*, wio_status_t, void*);
+
+//WIO variable length data container type
+typedef struct wio_vary {
+    //Data
+    void* data;
+    //Size of data
+    uint16_t size;
+} wio_vary_t;
 
 //WIO buffer type
 typedef struct wio_buf {

@@ -12,6 +12,8 @@ extern "C" {
 #define URPC_VERSION 0
 //u-RPC function signature builder
 #define URPC_SIG(n_objs, ...) ((urpc_type_t[]){n_objs, __VA_ARGS__})
+//u-RPC arguments builder
+#define URPC_ARG(...) ((const void*[]){__VA_ARGS__})
 
 //Message type
 typedef uint8_t urpc_msg_t;
@@ -30,6 +32,8 @@ typedef wio_status_t urpc_status_t;
 typedef wio_callback_t urpc_callback_t;
 //u-RPC stream & buffer type
 typedef wio_buf_t __urpc_stream_t;
+//u-RPC variable length data size
+typedef wio_vary_t urpc_vary_t;
 
 //Send function type
 typedef urpc_status_t (*urpc_send_func_t)(
@@ -39,14 +43,6 @@ typedef urpc_status_t (*urpc_send_func_t)(
     void*,
     urpc_callback_t
 );
-
-//u-RPC variable length data container type
-typedef struct urpc_vary {
-    //Size of data
-    size_t size;
-    //Pointer to data
-    void* data;
-} urpc_vary_t;
 
 //u-RPC callback pair type
 typedef struct __urpc_cb_pair {
