@@ -85,49 +85,49 @@ typedef struct urpc {
 } urpc_t;
 
 //Signed 8-bit data
-const urpc_type_t URPC_TYPE_I8 = 0x00;
+static const urpc_type_t URPC_TYPE_I8 = 0x00;
 //Unsigned 8-bit data
-const urpc_type_t URPC_TYPE_U8 = 0x01;
+static const urpc_type_t URPC_TYPE_U8 = 0x01;
 //Signed 16-bit data
-const urpc_type_t URPC_TYPE_I16 = 0x02;
+static const urpc_type_t URPC_TYPE_I16 = 0x02;
 //Signed 8-bit data
-const urpc_type_t URPC_TYPE_U16 = 0x03;
+static const urpc_type_t URPC_TYPE_U16 = 0x03;
 //Signed 32-bit data
-const urpc_type_t URPC_TYPE_I32 = 0x04;
+static const urpc_type_t URPC_TYPE_I32 = 0x04;
 //Unsigned 32-bit data
-const urpc_type_t URPC_TYPE_U32 = 0x05;
+static const urpc_type_t URPC_TYPE_U32 = 0x05;
 //Signed 64-bit data
-const urpc_type_t URPC_TYPE_I64 = 0x06;
+static const urpc_type_t URPC_TYPE_I64 = 0x06;
 //Unsigned 64-bit data
-const urpc_type_t URPC_TYPE_U64 = 0x07;
+static const urpc_type_t URPC_TYPE_U64 = 0x07;
 //Variable length data
-const urpc_type_t URPC_TYPE_VARY = 0x08;
+static const urpc_type_t URPC_TYPE_VARY = 0x08;
 //Callback handle
-const urpc_type_t URPC_TYPE_CALLBACK = 0x09;
+static const urpc_type_t URPC_TYPE_CALLBACK = 0x09;
 
 //Incorrect function signature
-const urpc_status_t URPC_ERR_SIG_INCORRECT = 0x20;
+static const urpc_status_t URPC_ERR_SIG_INCORRECT = 0x20;
 //Nonexist handle
-const urpc_status_t URPC_ERR_NONEXIST = 0x21;
+static const urpc_status_t URPC_ERR_NONEXIST = 0x21;
 //Operation not supported
-const urpc_status_t URPC_ERR_NO_SUPPORT = 0x22;
+static const urpc_status_t URPC_ERR_NO_SUPPORT = 0x22;
 //Out of memory; message too long
-const urpc_status_t URPC_ERR_NO_MEMORY = 0x23;
+static const urpc_status_t URPC_ERR_NO_MEMORY = 0x23;
 //Broken u-RPC message
-const urpc_status_t URPC_ERR_BROKEN_MSG = 0x24;
+static const urpc_status_t URPC_ERR_BROKEN_MSG = 0x24;
 //Function call throws exception
-const urpc_status_t URPC_ERR_EXCEPTION = 0x25;
+static const urpc_status_t URPC_ERR_EXCEPTION = 0x25;
 
 //Error message
-const urpc_msg_t URPC_MSG_ERROR = 0x00;
+static const urpc_msg_t URPC_MSG_ERROR = 0x00;
 //Function query message
-const urpc_msg_t URPC_MSG_FUNC_QUERY = 0x01;
+static const urpc_msg_t URPC_MSG_FUNC_QUERY = 0x01;
 //Function query response message
-const urpc_msg_t URPC_MSG_FUNC_RESP = 0x02;
+static const urpc_msg_t URPC_MSG_FUNC_RESP = 0x02;
 //Function call message
-const urpc_msg_t URPC_MSG_CALL = 0x03;
+static const urpc_msg_t URPC_MSG_CALL = 0x03;
 //Function call result message
-const urpc_msg_t URPC_MSG_CALL_RESULT = 0x04;
+static const urpc_msg_t URPC_MSG_CALL_RESULT = 0x04;
 
 /**
  * Initialize u-RPC instance.
