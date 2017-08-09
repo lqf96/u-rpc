@@ -2,6 +2,8 @@ from __future__ import absolute_import, unicode_literals
 from collections import Iterator, Sequence, namedtuple
 from six.moves import range
 
+from urpc.constants import urpc_type_repr, urpc_type_size
+
 # Spare table item error prompt
 PROMPT_ERR_SPARE_TABLE_ITEM = "Index does not correspond to any value."
 # Allocation table is full
@@ -117,8 +119,8 @@ def read_data(stream, urpc_type):
     :returns: Read data in given type
     """
     return struct.unpack(
-        _urpc_type_repr[urpc_type],
-        stream.read(_urpc_type_size[urpc_type])
+        urpc_type_repr[urpc_type],
+        stream.read(urpc_type_size[urpc_type])
     )[0]
 
 def read_vary(stream):

@@ -288,29 +288,3 @@ _urpc_msg_handlers = [
     URPC._handle_call, # URPC_MSG_CALL
     URPC._handle_call_result, # URPC_MSG_CALL_RESULT
 ]
-# u-RPC type representation for struct module
-_urpc_type_repr = [
-    "b", # URPC_TYPE_I8
-    "B", # URPC_TYPE_U8
-    "h", # URPC_TYPE_I16
-    "H", # URPC_TYPE_U16
-    "i", # URPC_TYPE_I32
-    "I", # URPC_TYPE_U32
-    "l", # URPC_TYPE_I64
-    "L", # URPC_TYPE_U64
-    None, # URPC_TYPE_VARY
-    "H", # URPC_TYPE_FUNC
-]
-# u-RPC type to size mapping
-_urpc_type_size = [
-    1, # URPC_TYPE_I8
-    1, # URPC_TYPE_U8
-    2, # URPC_TYPE_I16
-    2, # URPC_TYPE_U16
-    4, # URPC_TYPE_I32
-    4, # URPC_TYPE_U32
-    8, # URPC_TYPE_I64
-    8, # URPC_TYPE_U64
-    None, # URPC_TYPE_VARY
-    2, # URPC_TYPE_FUNC
-]

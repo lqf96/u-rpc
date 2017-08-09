@@ -62,7 +62,7 @@ class StringType(URPCType):
     # u-RPC underlying type
     underlying_type = URPC_TYPE_VARY
 
-def urpc_sig(arg_types, ret_types):
+def urpc_sig(arg_types, ret_types, func=None):
     """
     Decorate Python function with u-RPC signature.
 
@@ -70,13 +70,18 @@ def urpc_sig(arg_types, ret_types):
     :param ret_types: Result signature
     :returns: Decorated Python function
     """
-    def decorator(func):
-        # Set arguments and result signature
-        func.__urpc_arg_types = arg_types
-        func.__urpc_ret_types = ret_types
-        # Return function
-        return func
-    return decorator
+    # Decorator style
+    if not func:
+        return lambda _func: urpc_sig(arg_types, ret_types, _func)
+    # Wrapper function
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    # Set arguments and result signature
+    wrapper.__urpc_arg_types = arg_types
+    wrapper.__urpc_ret_types = ret_types
+    # Return function
+    return wrapper
 
 def urpc_wrap(arg_types, ret_types, func=None):
     """
