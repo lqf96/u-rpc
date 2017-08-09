@@ -376,13 +376,17 @@ WIO_CALLBACK(urpc_on_recv) {
 
     //Self
     urpc_t* self = (urpc_t*)data;
+    //Message data
+    wio_vary_t* msg_data = (wio_vary_t*)result;
     //Message stream
-    urpc_stream_t* msg_stream = (urpc_stream_t*)result;
+    wio_buf_t* msg_stream = WIO_INST_PTR(wio_buf_t);
 
     //Error occured when receiving
     if (status)
         return status;
 
+    //Initialize stream
+    WIO_TRY(wio_buf_init(msg_stream, msg_data->data, msg_data->size))
     //Read and compare magic
     WIO_TRY(wio_read(msg_stream, &tmp_u16, 2))
     if (tmp_u16!=urpc_magic)

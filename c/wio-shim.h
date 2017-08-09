@@ -14,6 +14,12 @@
 //Variable length data helper
 #define WIO_VARY(size, data) \
     &((wio_vary_t){data, size})
+//Constant variable length dara helper
+#define WIO_VARY_CONST(size, data) \
+    &((const wio_vary_t){data, size})
+//Pointer to anonymous structure instance
+#define WIO_INST_PTR(type) \
+    &((type){})
 
 //WIO status code type
 typedef uint8_t wio_status_t;
