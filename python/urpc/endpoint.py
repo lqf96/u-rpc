@@ -5,7 +5,7 @@ from bidict import bidict
 
 from urpc.constants import *
 from urpc.util import AllocTable, seq_get, read_data, read_vary, write_data, write_vary
-from urpc.python import URPCError, urpc_wrap
+from urpc.misc import URPCError, urpc_wrap
 
 # u-RPC protocol version
 URPC_VERSION = 0
