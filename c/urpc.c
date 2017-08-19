@@ -196,7 +196,7 @@ static urpc_status_t urpc_add_callback(
     void* cb_data,
     urpc_callback_t cb
 ) {
-    for (size_t i=0;i<self->_cb_size;i++) {
+    for (uint16_t i=0;i<self->_cb_size;i++) {
         urpc_cb_pair_t* pair = self->_cb_list+i;
 
         if (!pair->cb) {
@@ -225,7 +225,7 @@ static urpc_status_t urpc_invoke_callback(
     urpc_status_t status,
     void* result
 ) {
-    for (size_t i=0;i<self->_cb_size;i++) {
+    for (uint16_t i=0;i<self->_cb_size;i++) {
         urpc_cb_pair_t* pair = self->_cb_list+i;
 
         if (pair->msg_id==msg_id) {
@@ -320,12 +320,12 @@ static WIO_CALLBACK(urpc_after_send) {
  */
 urpc_status_t urpc_init(
     urpc_t* self,
-    size_t funcs_size,
-    size_t send_buf_size,
-    size_t tmp_buf_size,
+    uint16_t funcs_size,
+    uint16_t send_buf_size,
+    uint16_t tmp_buf_size,
     void* send_func_data,
     urpc_send_func_t send_func,
-    size_t cb_size
+    uint16_t cb_size
 ) {
     //Send and temporary buffer
     uint8_t* send_buf;
@@ -343,15 +343,9 @@ urpc_status_t urpc_init(
     //TODO: Functions store initialization
 
     //Send stream
-    send_buf = malloc(send_buf_size);
-    if (!send_buf)
-        return WIO_ERR_NO_MEMORY;
-    WIO_TRY(wio_buf_init(&self->_send_stream, send_buf, send_buf_size))
+    WIO_TRY(wio_buf_alloc_init(&self->_send_stream, send_buf_size))
     //Temporary stream for memory allocation
-    tmp_buf = malloc(tmp_buf_size);
-    if (!tmp_buf)
-        return WIO_ERR_NO_MEMORY;
-    WIO_TRY(wio_buf_init(&self->_tmp_stream, tmp_buf, tmp_buf_size))
+    WIO_TRY(wio_buf_alloc_init(&self->_tmp_stream, tmp_buf_size))
 
     //Send function
     self->_send_func_data = send_func_data;
@@ -377,16 +371,12 @@ WIO_CALLBACK(urpc_on_recv) {
     //Self
     urpc_t* self = (urpc_t*)data;
     //Message data
-    wio_vary_t* msg_data = (wio_vary_t*)result;
-    //Message stream
-    wio_buf_t* msg_stream = WIO_INST_PTR(wio_buf_t);
+    wio_buf_t* msg_stream = (wio_buf_t*)result;
 
     //Error occured when receiving
     if (status)
         return status;
 
-    //Initialize stream
-    WIO_TRY(wio_buf_init(msg_stream, msg_data->data, msg_data->size))
     //Read and compare magic
     WIO_TRY(wio_read(msg_stream, &tmp_u16, 2))
     if (tmp_u16!=urpc_magic)

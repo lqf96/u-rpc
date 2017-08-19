@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+//=== WIO helper marcos ===
+//Simple exception handling marco
 //(Usage is similar to rust's "try!")
 #define WIO_TRY(expr) { \
         wio_status_t status = expr; \
@@ -11,28 +13,15 @@
 //Callback declaration helper
 #define WIO_CALLBACK(name) \
     wio_status_t name(void* data, wio_status_t status, void* result)
-//Variable length data helper
-#define WIO_VARY(size, data) \
-    &((wio_vary_t){data, size})
-//Constant variable length dara helper
-#define WIO_VARY_CONST(size, data) \
-    &((const wio_vary_t){data, size})
 //Pointer to anonymous structure instance
 #define WIO_INST_PTR(type) \
     &((type){})
 
-//WIO status code type
+//=== WIO type definitions ===
+//WIO status type
 typedef uint8_t wio_status_t;
 //WIO callback type
 typedef wio_status_t (*wio_callback_t)(void*, wio_status_t, void*);
-
-//WIO variable length data container type
-typedef struct wio_vary {
-    //Data
-    void* data;
-    //Size of data
-    uint16_t size;
-} wio_vary_t;
 
 //WIO buffer type
 typedef struct wio_buf {
@@ -47,26 +36,42 @@ typedef struct wio_buf {
     uint16_t pos_b;
 } wio_buf_t;
 
+//=== WIO error codes ===
 //No error
-const wio_status_t WIO_OK = 0x00;
+static const wio_status_t WIO_OK = 0x00;
 //Out of range
-const wio_status_t WIO_ERR_OUT_OF_RANGE = 0x01;
+static const wio_status_t WIO_ERR_OUT_OF_RANGE = 0x01;
 //No memory
-const wio_status_t WIO_ERR_NO_MEMORY = 0x02;
+static const wio_status_t WIO_ERR_NO_MEMORY = 0x02;
 //Already in use
-const wio_status_t WIO_ERR_ALREADY = 0x03;
+static const wio_status_t WIO_ERR_ALREADY = 0x03;
+//Invalid parameter
+static const wio_status_t WIO_ERR_INVALID = 0x04;
+//Empty data structure
+static const wio_status_t WIO_ERR_EMPTY = 0x05;
 
+//=== WIO buffer functions ===
 /**
  * Initialize WIO buffer.
  *
  * @param self WIO buffer instance
  * @param buffer Underlying buffer
  * @param size Size of underlying buffer
- * @return Operation status
  */
 extern wio_status_t wio_buf_init(
     wio_buf_t* self,
     uint8_t* buffer,
+    uint16_t size
+);
+
+/**
+ * Initialize WIO buffer with dynamically allocated memory.
+ *
+ * @param self WIO buffer instance
+ * @param size Size of underlying buffer
+ */
+extern wio_status_t wio_buf_alloc_init(
+    wio_buf_t* self,
     uint16_t size
 );
 
@@ -76,7 +81,6 @@ extern wio_status_t wio_buf_init(
  * @param self WIO buffer instance
  * @param data Read data
  * @param size Size of data to read
- * @return Operation status
  */
 extern wio_status_t wio_read(
     wio_buf_t* self,
@@ -90,7 +94,6 @@ extern wio_status_t wio_read(
  * @param self WIO buffer instance
  * @param data Write data
  * @param size Size of data to read
- * @return Operation status
  */
 extern wio_status_t wio_write(
     wio_buf_t* self,
@@ -138,7 +141,7 @@ extern wio_status_t wio_free(
 );
 
 /**
- * Reset WIO buffer.
+ * Reset WIO buffer cursors.
  *
  * @param self WIO buffer instance
  * @return WIO_OK

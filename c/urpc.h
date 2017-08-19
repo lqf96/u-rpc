@@ -4,10 +4,10 @@
 extern "C" {
 #endif
 
-#include <stddef.h>
 #include <stdint.h>
 #include "wio-shim.h"
 
+//=== u-RPC helper marcos definitions ===
 //u-RPC version 0
 #define URPC_VERSION 0
 //u-RPC function signature builder
@@ -15,6 +15,7 @@ extern "C" {
 //u-RPC arguments builder
 #define URPC_ARG(...) ((const void*[]){__VA_ARGS__})
 
+//=== u-RPC types ===
 //Message type
 typedef uint8_t urpc_msg_t;
 //Data type type
@@ -32,8 +33,6 @@ typedef wio_status_t urpc_status_t;
 typedef wio_callback_t urpc_callback_t;
 //u-RPC stream & buffer type
 typedef wio_buf_t __urpc_stream_t;
-//u-RPC variable length data size
-typedef wio_vary_t urpc_vary_t;
 
 //Send function type
 typedef urpc_status_t (*urpc_send_func_t)(
@@ -54,6 +53,14 @@ typedef struct __urpc_cb_pair {
     urpc_callback_t cb;
 } __urpc_cb_pair_t;
 
+//u-RPC variable length data type
+typedef struct urpc_vary {
+    //Data
+    uint8_t* data;
+    //Size
+    uint16_t size;
+} urpc_vary_t;
+
 //u-RPC instance type
 typedef struct urpc {
     //Send message counter
@@ -62,9 +69,9 @@ typedef struct urpc {
     uint16_t _recv_counter;
 
     //Index of next available item
-    size_t _funcs_begin;
+    uint16_t _funcs_begin;
     //Size of the table
-    size_t _funcs_size;
+    uint16_t _funcs_size;
     //Function allocation table
     void* _funcs_store;
 
@@ -81,7 +88,7 @@ typedef struct urpc {
     //Callback pairs
     __urpc_cb_pair_t* _cb_list;
     //Capacity of callback pairs
-    size_t _cb_size;
+    uint16_t _cb_size;
 } urpc_t;
 
 //Signed 8-bit data
@@ -134,12 +141,12 @@ static const urpc_msg_t URPC_MSG_CALL_RESULT = 0x04;
  */
 extern urpc_status_t urpc_init(
     urpc_t* self,
-    size_t funcs_size,
-    size_t send_buf_size,
-    size_t tmp_buf_size,
+    uint16_t funcs_size,
+    uint16_t send_buf_size,
+    uint16_t tmp_buf_size,
     void* send_func_data,
     urpc_send_func_t send_func,
-    size_t cb_size
+    uint16_t cb_size
 );
 
 /**
