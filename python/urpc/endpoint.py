@@ -5,7 +5,7 @@ from bidict import bidict
 
 from urpc.constants import *
 from urpc.util import AllocTable, seq_get, read_data, read_vary, write_data, write_vary
-from urpc.misc import URPCError, urpc_wrap
+from urpc.misc import URPCError, URPCType, urpc_wrap
 
 # u-RPC protocol version
 URPC_VERSION = 0
@@ -234,8 +234,10 @@ class URPC(object):
         :raises URPCError: If there is no more space for the function
         """
         # Arguments and results types
-        arg_types = arg_types or getattr(func, "__urpc_arg_types", None)
-        ret_types = ret_types or getattr(func, "__urpc_ret_types", None)
+        if arg_types==None:
+            arg_types = getattr(func, "__urpc_arg_types", None)
+        if ret_types==None:
+            ret_types = getattr(func, "__urpc_ret_types", None)
         # Wrap Python function as u-RPC function
         if arg_types!=None and ret_types!=None:
             func = urpc_wrap(arg_types, ret_types, func)
@@ -295,6 +297,16 @@ class URPC(object):
         req = self._build_header(URPC_MSG_CALL, "send")
         # Function handle
         write_data(req, handle, URPC_TYPE_U16)
+        # Arguments and types transform
+        for i in range(len(sig_args)):
+            t = sig_args[i]
+            # URPCType subclass argument
+            if isinstance(t, type) and issubclass(t, URPCType):
+                t = t()
+            # URPCType instance
+            if isinstance(t, URPCType):
+                args[i] = t.dumps(args[i])
+                sig_args[i] = t.underlying_type
         # Arguments signature and arguments
         write_vary(req, sig_args)
         self._marshall(req, sig_args, args)

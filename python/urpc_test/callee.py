@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import functools
+from six import text_type
 
 from urpc import urpc_sig, urpc_wrap, U8, VARY, StringType
 

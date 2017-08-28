@@ -121,7 +121,7 @@ def urpc_wrap(arg_types, ret_types, func=None):
             raise URPCError(URPC_ERR_SIG_INCORRECT)
         # Deserialize arguments
         args = [
-            t.deserialize(arg) if isinstance(t, URPCType) else arg
+            t.loads(arg) if isinstance(t, URPCType) else arg
             for t, arg in zip(arg_types, _args)
         ]
         # Invoke wrapped Python function
@@ -134,7 +134,7 @@ def urpc_wrap(arg_types, ret_types, func=None):
             results = (results,)
         # Serialize results
         results = [
-            t.serialize(arg) if isinstance(t, URPCType) else arg
+            t.dumps(arg) if isinstance(t, URPCType) else arg
             for t, arg in zip(ret_types, results)
         ]
         # Return results and low-level results types
