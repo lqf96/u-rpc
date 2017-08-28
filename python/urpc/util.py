@@ -1,4 +1,5 @@
 from __future__ import absolute_import, unicode_literals
+import struct
 from collections import Iterator, Sequence, namedtuple
 from six.moves import range
 
@@ -142,7 +143,7 @@ def write_data(stream, data, urpc_type):
     :param urpc_type: u-RPC data type
     """
     stream.write(struct.pack(
-        _urpc_type_repr[urpc_type],
+        urpc_type_repr[urpc_type],
         data
     ))
 

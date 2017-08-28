@@ -130,7 +130,7 @@ class URPC(object):
             res = self._build_header(URPC_MSG_ERROR, "recv")
             # Write request message ID and error code
             write_data(res, msg_id, URPC_TYPE_U16)
-            write_data(res, error_code, URPC_TYPE_U16)
+            write_data(res, e.reason, URPC_TYPE_U16)
             # Return stream
             return res
     def _handle_error(self, res, msg_id):
@@ -158,16 +158,29 @@ class URPC(object):
         :returns: A response message
         """
         # Function name
-        name = read_vary(req)
+        name = read_vary(req).decode("utf-8")
         # Search for function in function lookup
-        handle = self._funcs_lookup.get(name)
-        if not handle:
+        handle = self._func_name_lookup.get(name)
+        if handle==None:
             raise URPCError(URPC_ERR_NONEXIST)
         # Response message
         res = self._build_header(URPC_MSG_FUNC_RESP, "recv")
         write_data(res, msg_id, URPC_TYPE_U16)
         write_data(res, handle, URPC_TYPE_U16)
         return res
+    def _handle_func_resp(self, res, msg_id):
+        """
+        u-RPC function query response handler.
+
+        :param req: Request message stream
+        :param msg_id: Request message ID
+        """
+        # Request message ID
+        req_msg_id = read_data(res, URPC_TYPE_U16)
+        # Function handle
+        handle = read_data(res, URPC_TYPE_U16)
+        # Invoke callback
+        self._invoke_callback(req_msg_id, handle)
     def _handle_call(self, req, msg_id):
         """
         u-RPC function call handler.
@@ -224,7 +237,7 @@ class URPC(object):
         arg_types = arg_types or getattr(func, "__urpc_arg_types", None)
         ret_types = ret_types or getattr(func, "__urpc_ret_types", None)
         # Wrap Python function as u-RPC function
-        if arg_types and ret_types:
+        if arg_types!=None and ret_types!=None:
             func = urpc_wrap(arg_types, ret_types, func)
         # Add function to functions store
         handle = self._funcs_store.add(func)
@@ -245,7 +258,26 @@ class URPC(object):
         # Remove function from name lookup
         if handle in self._func_name_lookup.inv:
             del self._func_name_lookup.inv[handle]
-    def call(self, handle, sig_args, args, callback):
+    def query(self, func_name, callback=None):
+        """
+        Query u-RPC function handle.
+
+        :param func_name: Function name
+        :param callback: Called when query completed
+        """
+        # Decorator style
+        if not callback:
+            return lambda _callback: self.query(func_name, _callback)
+        # Build u-RPC message
+        msg_id = self._counters["send"]
+        req = self._build_header(URPC_MSG_FUNC_QUERY, "send")
+        # Function name length and function name
+        write_vary(req, func_name.encode("utf-8"))
+        # Operation callback
+        self._oper_callbacks[msg_id] = callback
+        # Send request message
+        self._send_callback(req.getvalue())
+    def call(self, handle, sig_args, args, callback=None):
         """
         Do u-RPC call.
 
@@ -255,6 +287,10 @@ class URPC(object):
         :param sig_rets: Signature of return values
         :param callback: Called when u-RPC call completed
         """
+        # Decorator style
+        if not callback:
+            return lambda _callback: self.call(handle, sig_args, args, _callback)
+        # Build u-RPC message
         msg_id = self._counters["send"]
         req = self._build_header(URPC_MSG_CALL, "send")
         # Function handle
@@ -284,7 +320,7 @@ class URPC(object):
 _urpc_msg_handlers = [
     URPC._handle_error, # URPC_MSG_ERROR
     URPC._handle_func_query, # URPC_MSG_FUNC_QUERY
-    None, # URPC_MSG_FUNC_RESP
+    URPC._handle_func_resp, # URPC_MSG_FUNC_RESP
     URPC._handle_call, # URPC_MSG_CALL
     URPC._handle_call_result, # URPC_MSG_CALL_RESULT
 ]

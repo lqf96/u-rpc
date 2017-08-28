@@ -246,13 +246,13 @@ static urpc_status_t urpc_handle_error(
     uint16_t msg_id
 ) {
     uint16_t req_msg_id;
-    urpc_status_t status;
+    urpc_status_t urpc_status;
 
     //Read request message ID and error code
     WIO_TRY(wio_read(msg_stream, &req_msg_id, 2))
-    WIO_TRY(wio_read(msg_stream, &status, 1))
+    WIO_TRY(wio_read(msg_stream, &urpc_status, 1))
     //Invoke callback
-    WIO_TRY(urpc_invoke_callback(self, req_msg_id, status, NULL))
+    WIO_TRY(urpc_invoke_callback(self, req_msg_id, urpc_status, NULL))
 
     return WIO_OK;
 }
@@ -327,13 +327,6 @@ urpc_status_t urpc_init(
     urpc_send_func_t send_func,
     uint16_t cb_size
 ) {
-    //Send and temporary buffer
-    uint8_t* send_buf;
-    //Temporary buffer
-    uint8_t* tmp_buf;
-    //Callback functions list
-    __urpc_cb_pair_t* cb_list;
-
     //Send and receive message counter
     self->_send_counter = 0;
     self->_recv_counter = 0;

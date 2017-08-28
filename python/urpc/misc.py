@@ -7,7 +7,7 @@ from six.moves import range
 
 from urpc.constants import *
 
-class URPCError(BaseException):
+class URPCError(Exception):
     """ u-RPC error class. """
     def __init__(self, reason):
         """
