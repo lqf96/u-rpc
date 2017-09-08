@@ -33,19 +33,19 @@ VARY = URPC_TYPE_VARY = 0x08
 # Operation successfully completed
 URPC_OK = 0x00
 # Incorrect function signature
-URPC_ERR_SIG_INCORRECT = 0x01
+URPC_ERR_SIG_INCORRECT = 0x20
 # Nonexist handle
-URPC_ERR_NONEXIST = 0x02
+URPC_ERR_NONEXIST = 0x21
 # Operation not supported
-URPC_ERR_NO_SUPPORT = 0x03
+URPC_ERR_NO_SUPPORT = 0x22
 # Store is full
-URPC_ERR_NO_MEMORY = 0x04
+URPC_ERR_NO_MEMORY = 0x23
 # Broken u-RPC message
-URPC_ERR_BROKEN_MSG = 0x05
+URPC_ERR_BROKEN_MSG = 0x24
 # Function call throws exception
-URPC_ERR_EXCEPTION = 0x06
+URPC_ERR_EXCEPTION = 0x25
 # Data too long
-URPC_ERR_TOO_LONG = 0x07
+URPC_ERR_TOO_LONG = 0x26
 
 # u-RPC type representation for struct module
 urpc_type_repr = [

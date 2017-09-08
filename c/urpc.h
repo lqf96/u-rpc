@@ -5,6 +5,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <stddef.h>
 #include "wio-shim.h"
 
 //=== u-RPC helper marcos definitions ===
