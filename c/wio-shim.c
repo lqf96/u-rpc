@@ -135,16 +135,3 @@ wio_status_t wio_free(
 
     return WIO_OK;
 }
-
-/**
- * {@inheritDoc}
- */
-wio_status_t wio_reset(
-    wio_buf_t* self
-) {
-    //Reset cursors
-    self->pos_a = 0;
-    self->pos_b = 0;
-
-    return WIO_OK;
-}

@@ -15,6 +15,9 @@ extern "C" {
 #define URPC_SIG(n_objs, ...) ((urpc_type_t[]){n_objs, __VA_ARGS__})
 //u-RPC arguments builder
 #define URPC_ARG(...) ((const void*[]){__VA_ARGS__})
+//u-RPC variable length data type builder
+#define URPC_VARY(data, size) &((urpc_vary_t){data, size})
+#define URPC_VARY_CONST(data, size) &((const urpc_vary_t){data, size})
 
 //=== u-RPC types ===
 //Message type
@@ -57,7 +60,7 @@ typedef struct __urpc_cb_pair {
 //u-RPC variable length data type
 typedef struct urpc_vary {
     //Data
-    uint8_t* data;
+    void* data;
     //Size
     uint16_t size;
 } urpc_vary_t;

@@ -110,12 +110,15 @@ static urpc_status_t urpc_unmarshall(
     //Reserve space for pointer table
     WIO_TRY(wio_alloc(
         out_stream,
-        n_args*sizeof(void*),
+        (n_args+1)*sizeof(void*),
         (uint8_t**)(&ptrs)
     ))
 
-    for (uint8_t i=0;i<n_args;i++) {
-        urpc_type_t type = sig_args[i+1];
+    //Signature is the first item in pointer table
+    ptrs[0] = sig_args;
+    //Build pointer table
+    for (uint8_t i=1;i<=n_args;i++) {
+        urpc_type_t type = sig_args[i];
 
         switch (type) {
             case URPC_TYPE_CALLBACK:
@@ -288,14 +291,16 @@ static urpc_status_t urpc_handle_call_result(
     //Request message ID
     WIO_TRY(wio_read(msg_stream, &req_msg_id, 2))
     //Result signature
-    WIO_TRY(wio_read(msg_stream, &n_result, 1))
     sig_rets = msg_stream->buffer+msg_stream->pos_a;
+    WIO_TRY(wio_read(msg_stream, &n_result, 1))
     msg_stream->pos_a += n_result;
 
+    //Temporary buffer
+    wio_buf_t* tmp_buf = &self->_tmp_stream;
     //Reset temporary buffer
-    WIO_TRY(wio_reset(&self->_tmp_stream))
+    tmp_buf->pos_a = tmp_buf->pos_b = 0;
     //Unmarshall result
-    WIO_TRY(urpc_unmarshall(self, msg_stream, &self->_tmp_stream, sig_rets, &results))
+    WIO_TRY(urpc_unmarshall(self, msg_stream, tmp_buf, sig_rets, &results))
 
     //Invoke callback
     WIO_TRY(urpc_invoke_callback(self, req_msg_id, WIO_OK, results))
@@ -309,8 +314,9 @@ static urpc_status_t urpc_handle_call_result(
 static WIO_CALLBACK(urpc_after_send) {
     urpc_t* self = (urpc_t*)data;
 
+    wio_buf_t* send_stream = &self->_send_stream;
     //Clear send stream
-    WIO_TRY(wio_reset(&self->_send_stream))
+    send_stream->pos_a = send_stream->pos_b = 0;
 
     return WIO_OK;
 }
