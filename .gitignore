@@ -8,7 +8,9 @@ __MACOSX
 __pycache__
 # Virtual environment
 venv
+venv2
 # Distribution files
+.eggs
 *.egg-info
 dist
 

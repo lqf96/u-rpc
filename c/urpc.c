@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "urpc.h"
 
-#if !defined(URPC_VERSION) || URPC_VERSION!=0
+#if !defined(URPC_VERSION) || URPC_VERSION!=1
     #error u-RPC header file mismatch
 #endif
 
@@ -17,9 +17,9 @@ typedef urpc_status_t (*urpc_msg_handler_t)(
 );
 
 //u-RPC version
-const static uint8_t urpc_version = 0;
-//u-RPC magic ("ur")
-const static uint16_t urpc_magic = 29301;
+const static uint8_t urpc_version = URPC_VERSION;
+//u-RPC magic ("0b1010")
+const static uint8_t urpc_magic = 10;
 
 //u-RPC type to size mapping
 const static uint8_t urpc_type_size[] = {
@@ -64,15 +64,10 @@ static urpc_status_t urpc_marshall(
             //Variable length data
             case URPC_TYPE_VARY: {
                 urpc_vary_t* vary_arg = (urpc_vary_t*)arg;
-                uint8_t vary_size;
 
-                //Check data size
-                if (vary_arg->size>=256)
-                    return URPC_ERR_NO_MEMORY;
-                vary_size = vary_arg->size;
                 //Write data
-                WIO_TRY(wio_write(stream, &vary_size, 1))
-                WIO_TRY(wio_write(stream, vary_arg->data, vary_size))
+                WIO_TRY(wio_write(stream, &vary_arg->size, 2))
+                WIO_TRY(wio_write(stream, vary_arg->data, vary_arg->size))
 
                 break;
             }
@@ -126,15 +121,13 @@ static urpc_status_t urpc_unmarshall(
             //Variable length data
             case URPC_TYPE_VARY: {
                 urpc_vary_t* vary_arg;
-                uint8_t vary_size;
 
                 WIO_TRY(wio_alloc(out_stream, sizeof(urpc_vary_t), &vary_arg))
                 //Size of variable length data
-                WIO_TRY(wio_read(in_stream, &vary_size, 1))
-                vary_arg->size = vary_size;
+                WIO_TRY(wio_read(in_stream, &vary_arg->size, 2))
                 //Data
                 vary_arg->data = in_stream->buffer+in_stream->pos_a;
-                in_stream->pos_a += vary_size;
+                in_stream->pos_a += vary_arg->size;
 
                 //Set pointer for current argument
                 ptrs[i] = vary_arg;
@@ -173,8 +166,8 @@ static urpc_status_t urpc_build_header(
     uint16_t* counter
 ) {
     //Write magic and version
-    WIO_TRY(wio_write(stream, &urpc_magic, 2))
-    WIO_TRY(wio_write(stream, &urpc_version, 1))
+    uint8_t magic_ver_byte = (urpc_magic<<4)|urpc_version;
+    WIO_TRY(wio_write(stream, &magic_ver_byte, 1))
     //Write message ID and type
     WIO_TRY(wio_write(stream, counter, 2))
     WIO_TRY(wio_write(stream, &msg_type, 1))
@@ -376,13 +369,13 @@ WIO_CALLBACK(urpc_on_recv) {
     if (status)
         return status;
 
-    //Read and compare magic
-    WIO_TRY(wio_read(msg_stream, &tmp_u16, 2))
-    if (tmp_u16!=urpc_magic)
-        return URPC_ERR_BROKEN_MSG;
-    //Read and compare version
+    //Read first byte
     WIO_TRY(wio_read(msg_stream, &tmp_u8, 1))
-    if (tmp_u8!=urpc_version)
+    //Compare magic
+    if ((tmp_u8>>4)!=urpc_magic)
+        return URPC_ERR_BROKEN_MSG;
+    //Compare version
+    if ((tmp_u8&0xf)!=urpc_version)
         return URPC_ERR_NO_SUPPORT;
 
     //Read message ID and type

@@ -9,8 +9,8 @@ extern "C" {
 #include "wio-shim.h"
 
 //=== u-RPC helper marcos definitions ===
-//u-RPC version 0
-#define URPC_VERSION 0
+//u-RPC version 1
+#define URPC_VERSION 1
 //u-RPC function signature builder
 #define URPC_SIG(n_objs, ...) ((urpc_type_t[]){n_objs, __VA_ARGS__})
 //u-RPC arguments builder

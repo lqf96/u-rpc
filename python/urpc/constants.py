@@ -1,5 +1,10 @@
 from __future__ import absolute_import, unicode_literals
 
+# u-RPC protocol magic
+URPC_MAGIC = 10
+# u-RPC protocol version
+URPC_VERSION = 1
+
 # Error message
 URPC_MSG_ERROR = 0
 # Function query message

@@ -7,11 +7,6 @@ from urpc.constants import *
 from urpc.util import AllocTable, seq_get, read_data, read_vary, write_data, write_vary
 from urpc.misc import URPCError, URPCType, urpc_wrap
 
-# u-RPC protocol version
-URPC_VERSION = 0
-# u-RPC magic ("ur")
-URPC_MAGIC = 29301
-
 class URPC(object):
     """ u-RPC endpoint class. """
     def __init__(self, send_callback, n_funcs=256):
@@ -41,8 +36,8 @@ class URPC(object):
         """
         res = BytesIO()
         # Magic and protocol version
-        write_data(res, URPC_MAGIC, URPC_TYPE_U16)
-        write_data(res, URPC_VERSION, URPC_TYPE_U8)
+        magic_ver_byte = (URPC_MAGIC<<4)|URPC_VERSION
+        write_data(res, magic_ver_byte, URPC_TYPE_U8)
         # Message ID and type
         write_data(res, self._counters[counter], URPC_TYPE_U16)
         write_data(res, msg_type, URPC_TYPE_U8)
@@ -66,7 +61,7 @@ class URPC(object):
         for obj, obj_type in zip(objects, sig):
             # Variable length data
             if obj_type==URPC_TYPE_VARY:
-                write_vary(stream, obj)
+                write_vary(stream, obj, "H")
             # Value types
             else:
                 write_data(stream, obj, obj_type)
@@ -84,7 +79,7 @@ class URPC(object):
             obj = None
             # Read argument
             if obj_type==URPC_TYPE_VARY:
-                obj = read_vary(stream)
+                obj = read_vary(stream, "H")
             else:
                 obj = read_data(stream, obj_type)
             objects.append(obj)
@@ -113,9 +108,10 @@ class URPC(object):
             # Response stream
             res = None
             # Parse magic string and version
-            if read_data(req, URPC_TYPE_U16)!=URPC_MAGIC:
+            magic_ver_byte = read_data(req, URPC_TYPE_U8)
+            if (magic_ver_byte>>4)!=URPC_MAGIC:
                 raise URPCError(URPC_ERR_BROKEN_MSG)
-            if read_data(req, URPC_TYPE_U8)!=URPC_VERSION:
+            if (magic_ver_byte&0xf)!=URPC_VERSION:
                 raise URPCError(URPC_ERR_NO_SUPPORT)
             # Parse message ID and type
             msg_id = read_data(req, URPC_TYPE_U16)

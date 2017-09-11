@@ -124,15 +124,18 @@ def read_data(stream, urpc_type):
         stream.read(urpc_type_size[urpc_type])
     )[0]
 
-def read_vary(stream):
+def read_vary(stream, data_size_type="B"):
     """
     Read variable length data from stream.
-    The data should have a 1-byte size, followed by bytes of that size.
 
     :param stream: Data stream
+    :param data_size_type: Type of data size in Python's struct module representation
     :returns: Data in byte array
     """
-    data_size = ord(stream.read(1))
+    # Read data size
+    data_size_size = struct.calcsize(data_size_type)
+    data_size = struct.unpack(data_size_type, stream.read(data_size_size))[0]
+    # Read data
     return bytearray(stream.read(data_size))
 
 def write_data(stream, data, urpc_type):
@@ -147,18 +150,19 @@ def write_data(stream, data, urpc_type):
         data
     ))
 
-def write_vary(stream, data):
+def write_vary(stream, data, data_size_type="B"):
     """
     Write variable length data to stream.
-    The data should not be longer than 2^8 bytes.
 
     :param stream: Data stream
-    :returns: Data in byte array
+    :param data: Data to write to stream
+    :param data_size_type: Type of data size in Python's struct module representation
     """
     data_size = len(data)
     # Data length check
-    if data_size>=2**8:
+    data_size_size = struct.calcsize(data_size_type)
+    if data_size>=2**(data_size_size*8):
         raise URPCError(URPC_ERR_TOO_LONG)
     # Write to stream
-    stream.write(bytearray([data_size]))
+    stream.write(struct.pack(data_size_type, data_size))
     stream.write(bytearray(data))
