@@ -93,6 +93,21 @@ class AllocTable(Sequence):
         self._size += 1
         # Return corresponding index
         return index
+    def get(self, index, default=None):
+        """
+        Get value by index. Return default value for spare item.
+
+        :param index: Index of the value
+        :param default: Default value if item is spare
+        :returns: The value
+        """
+        item = self._store[index]
+        # Spare table item; fallback to default value
+        if item.spare:
+            return default
+        # Return data
+        else:
+            return item.data
 
 def seq_get(seq, index, default=None):
     """

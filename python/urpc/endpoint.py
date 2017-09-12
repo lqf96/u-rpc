@@ -126,7 +126,7 @@ class URPC(object):
             res = self._build_header(URPC_MSG_ERROR, "recv")
             # Write request message ID and error code
             write_data(res, msg_id, URPC_TYPE_U16)
-            write_data(res, e.reason, URPC_TYPE_U16)
+            write_data(res, e.reason, URPC_TYPE_U8)
             # Return stream
             return res
     def _handle_error(self, res, msg_id):
