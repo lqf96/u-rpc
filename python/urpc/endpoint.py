@@ -1,11 +1,16 @@
 from __future__ import absolute_import, unicode_literals
-import struct
+import struct, logging
 from io import BytesIO
 from bidict import bidict
 
 from urpc.constants import *
 from urpc.util import AllocTable, seq_get, read_data, read_vary, write_data, write_vary
 from urpc.misc import URPCError, URPCType, urpc_wrap
+
+# Module logger
+_logger = logging.getLogger(__name__)
+# Logger level
+_logger.setLevel(logging.DEBUG)
 
 class URPC(object):
     """ u-RPC endpoint class. """
@@ -316,13 +321,17 @@ class URPC(object):
 
         :param data: u-RPC message data (in bytes)
         """
+        _logger.debug("Received u-RPC message: %s", data)
         # Request message stream
         req = BytesIO(data)
         # Handle message
         res = self._handle_msg(req)
         # Send response message
         if res:
-            self._send_callback(res.getvalue())
+            send_data = res.getvalue()
+            # Invoke send callback
+            _logger.debug("Send u-RPC message: %s", send_data)
+            self._send_callback(send_data)
 
 # u-RPC message handlers
 _urpc_msg_handlers = [
