@@ -22,7 +22,7 @@ I8 = URPC_TYPE_I8 = 0x00
 U8 = URPC_TYPE_U8 = 0x01
 # Signed 16-bit data
 I16 = URPC_TYPE_I16 = 0x02
-# Signed 8-bit data
+# Signed 16-bit data
 U16 = URPC_TYPE_U16 = 0x03
 # Signed 32-bit data
 I32 = URPC_TYPE_I32 = 0x04
