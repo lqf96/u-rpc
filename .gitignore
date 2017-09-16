@@ -1,0 +1,20 @@
+# macOS files
+.DS_Store
+._*
+__MACOSX
+
+# Python files
+*.pyc
+__pycache__
+# Virtual environment
+venv
+venv2
+# Distribution files
+.eggs
+*.egg-info
+dist
+
+# C/C++ files
+*.o
+# Static library
+*.a
