@@ -14,7 +14,8 @@ u-RPC currently supports following data types:
   - The variable length data is represented by prepending a 2-byte length of the data before the data itself when serialized.
 
 ## u-RPC Signature
-u-RPC signature represents the amount and the types of RPC arguments and return values. It consists of a 1-byte number of arguments and the types of arguments.  
+u-RPC signature represents the amount and the types of RPC arguments and return values. It consists of a 1-byte number of arguments and the types of arguments.
+
 For example, for function `f` with type `(uint8_t, uint16_t) -> int16_t`, the signature of the arguements will be `\x02\x01\x03` and the signature of the results will be `\x01\x02`.
 
 ## u-RPC Message Types
