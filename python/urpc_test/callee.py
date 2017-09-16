@@ -5,29 +5,31 @@ from six import text_type
 from urpc import urpc_sig, urpc_wrap, U8, VARY, StringType
 
 def _urpc_test_func_1(x, y):
-    """
-    u-RPC integer arguments test function.
+    """!
+    @brief u-RPC integer arguments test function.
 
-    :param x, y: 8-bit unsigned integers
-    :returns: Sum of the two numbers
+    @param x uint8_t integer
+    @param y uint8_t integer
+    @return Sum of the two integers
     """
     return x+y
 
 def _urpc_test_func_2(buf):
-    """
-    u-RPC variable length data test function.
+    """!
+    @brief u-RPC variable length data test function.
 
-    :param buf: A byte string buffer
-    :returns: The same byte string repeated three times
+    @param buf A byte string buffer
+    @return The same byte string repeated three times
     """
     return buf*3
 
 def _urpc_test_func_3(test_case, string):
-    """
-    u-RPC string type data test function.
+    """!
+    @brief u-RPC string type data test function.
 
-    :param string: A string
-    :returns: Length of the string
+    @param test_case: TestCase instance
+    @param string A string
+    @return Length of the string
     """
     # Ensure we get a string
     test_case.assertEqual(type(string), text_type)
@@ -35,27 +37,29 @@ def _urpc_test_func_3(test_case, string):
     return len(string)
 
 def _urpc_test_func_4():
-    """
-    u-RPC zero arguments and multiple return value test function.
+    """!
+    @brief u-RPC zero arguments and multiple return value test function.
 
-    :returns: A number and a string in a tuple
+    @return A number and a string in a tuple
     """
     return 4, "test"
 
 def _urpc_test_func_5(arg_types, args):
-    """
-    u-RPC variable signature test function.
+    """!
+    @brief u-RPC variable signature test function.
 
-    :returns: Argument types and arguments without any change
+    @param arg_types Types of u-RPC arguments
+    @param args u-RPC arguments
+    @return Argument types and arguments without any change
     """
     return arg_types, args
 
 def set_up_test_functions(test_case, callee):
-    """
-    Add test functions to callee endpoint.
+    """!
+    @brief Add test functions to callee endpoint.
 
-    :param test_case: Test case
-    :param callee: Callee u-RPC endpoint
+    @param test_case Test case
+    @param callee Callee u-RPC endpoint
     """
     # Function 1
     callee.add_func(

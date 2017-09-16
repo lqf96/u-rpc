@@ -8,67 +8,84 @@ from six.moves import range
 from urpc.constants import *
 
 class URPCError(Exception):
-    """ u-RPC error class. """
+    """!
+    @brief u-RPC error class.
+    """
     def __init__(self, reason):
-        """
-        u-RPC error type constructor.
+        """!
+        @brief u-RPC error type constructor.
 
-        :param reason: Reason of the error.
+        @param reason Reason of the error.
         """
+        ## Reason of the error
         self.reason = reason
 
 class URPCType(with_metaclass(ABCMeta, object)):
-    """
-    u-RPC Python-side high-level type and (de)serializer.
+    """!
+    @brief u-RPC Python-side high-level type and (de)serializer.
+
     Must provide property "underlying_type" on subclass instances.
     """
     @abstractmethod
     def loads(self, data):
-        """
-        Convert u-RPC data to Python value.
+        """!
+        @brief Convert u-RPC data to Python value.
 
-        :param data: Raw data to convert
+        @param data Raw u-RPC data to convert.
+        @return Python value.
         """
         pass
     @abstractmethod
     def dumps(self, value):
-        """
-        Convert Python value to u-RPC data.
+        """!
+        @brief Convert Python value to u-RPC data.
 
-        :param value: Python value to convert
+        @param value: Python value to convert.
+        @return Raw u-RPC data.
         """
         pass
 
 class StringType(URPCType):
-    """ u-RPC server-side string type and (de)serializer. """
+    """!
+    @brief u-RPC server-side string type and (de)serializer.
+    """
     def __init__(self, encoding="utf-8"):
+        """!
+        @brief u-RPC string type constructor.
+
+        @param encoding: Python string encoding.
+        """
+        ## Python string encoding
         self.encoding = encoding
     def loads(self, data):
-        """
-        Convert u-RPC variable length data to Python string.
+        """!
+        @brief Convert u-RPC variable length data to Python string.
 
-        :param data: Raw data to convert
-        :raises UnicodeDecodeError: If string decoding fails
+        @param data Raw bytes to convert.
+        @return A python string.
+        @throws UnicodeDecodeError If string decoding fails.
         """
         return text_type(data, encoding=self.encoding)
     def dumps(self, value):
-        """
-        Convert Python string to u-RPC variable length data.
+        """!
+        @brief Convert Python string to u-RPC variable length data.
 
-        :param value: Python string to convert
-        :raises UnicodeEncodeError: If string encoding fails
+        @param value Python string to convert.
+        @return Encoded byte string.
+        @throws UnicodeEncodeError If string encoding fails.
         """
         return bytearray(value.encode(self.encoding))
-    # u-RPC underlying type
+    ## u-RPC underlying type
     underlying_type = URPC_TYPE_VARY
 
 def urpc_sig(arg_types, ret_types, func=None):
-    """
-    Decorate Python function with u-RPC signature.
+    """!
+    @brief Decorate Python function with u-RPC signature.
 
-    :param arg_types: Arguments signature
-    :param ret_types: Result signature
-    :returns: Decorated Python function
+    @param arg_types Arguments signature.
+    @param ret_types Result signature.
+    @param func: Function to decorate.
+    @return Decorated Python function.
     """
     # Decorator style
     if not func:
@@ -84,13 +101,13 @@ def urpc_sig(arg_types, ret_types, func=None):
     return wrapper
 
 def urpc_wrap(arg_types, ret_types, func=None):
-    """
-    Wrap a Python function as a u-RPC function.
+    """!
+    @brief Wrap a Python function as a u-RPC function.
 
-    :param arg_types: Arguments signature
-    :param ret_types: Result signature
-    :param func: Function to wrap
-    :returns: u-RPC wrapper function
+    @param arg_types Arguments signature.
+    @param ret_types Result signature.
+    @param func Function to wrap.
+    @return u-RPC wrapper function.
     """
     # Decorator form
     if not func:

@@ -6,12 +6,18 @@ from urpc import URPC, StringType, URPC_ERR_NONEXIST, URPC_ERR_SIG_INCORRECT, U8
 from urpc_test.callee import set_up_test_functions
 
 class Py2PyTest(TestCase):
+    """!
+    @brief u-RPC Python to Python end-to-end test.
+    """
     def setUp(self):
-        # Caller endpoint
+        """!
+        @brief Set up test case.
+        """
+        ## Caller endpoint
         caller = self._caller = URPC(
             send_callback=None
         )
-        # Callee endpoint
+        ## Callee endpoint
         callee = self._callee = URPC(
             send_callback=caller.recv_callback,
             n_funcs=16
@@ -21,8 +27,8 @@ class Py2PyTest(TestCase):
         # Set up test functions
         set_up_test_functions(self, callee)
     def test_func_query(self):
-        """
-        Test u-RPC function name to handle query.
+        """!
+        @brief Test u-RPC function name to handle query.
         """
         # Existing function
         @self._caller.query("func_1")
@@ -37,8 +43,8 @@ class Py2PyTest(TestCase):
             # Error happened
             self.assertEqual(error.reason, URPC_ERR_NONEXIST)
     def test_func_call(self):
-        """
-        Test u-RPC function call.
+        """!
+        @brief Test u-RPC function call.
         """
         # Non-exist function
         @self._caller.call(100, [], [])
@@ -79,8 +85,8 @@ class Py2PyTest(TestCase):
                 # Call result
                 self.assertEqual(result, [5])
     def test_variable_data(self):
-        """
-        Test u-RPC variable length data.
+        """!
+        @brief Test u-RPC variable length data.
         """
         @self._caller.query("func_2")
         def cb(_, handle):
@@ -94,8 +100,8 @@ class Py2PyTest(TestCase):
                 # Call result
                 self.assertEqual(result, [test_bytes*3])
     def test_urpc_string(self):
-        """
-        Test u-RPC high level string type.
+        """!
+        @brief Test u-RPC high level string type.
         """
         @self._caller.query("func_3")
         def cb(_, handle):
@@ -109,8 +115,8 @@ class Py2PyTest(TestCase):
                 # Call result
                 self.assertEqual(result, [len(test_string)])
     def test_multi_result(self):
-        """
-        Test zero arguments and multiple results.
+        """!
+        @brief Test zero arguments and multiple results.
         """
         @self._caller.query("func_4")
         def cb(_, handle):
@@ -121,8 +127,8 @@ class Py2PyTest(TestCase):
                 # Call result
                 self.assertEqual(result, [4, b"test"])
     def test_variable_sig(self):
-        """
-        Test u-RPC variable signature function.
+        """!
+        @brief Test u-RPC variable signature function.
         """
         @self._caller.query("func_5")
         def cb(_, handle):

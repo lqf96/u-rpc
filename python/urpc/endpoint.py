@@ -13,31 +13,35 @@ _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
 
 class URPC(object):
-    """ u-RPC endpoint class. """
+    """!
+    @brief u-RPC endpoint class.
+    """
     def __init__(self, send_callback, n_funcs=256):
-        """
-        u-RPC endpoint class constructor.
+        """!
+        @brief u-RPC endpoint class constructor.
 
-        :param send_callback: Function for sending data
-        :param n_funcs: Maximum number of functions in store
+        @param send_callback Function for sending data
+        @param n_funcs Maximum number of functions in store
         """
-        # Functions store (Handle to function mapping)
+        ## Functions store (Handle to function mapping)
         self._funcs_store = AllocTable(n_funcs)
-        # Function name to handle mapping
+        ## Function name to handle mapping
         self._func_name_lookup = bidict()
-        # Message ID counter
+        ## Message ID counter
         self._counters = {"send": 0, "recv": 0}
-        # Send data callback
+        ## Send data callback
         self._send_callback = send_callback
-        # Operation callbacks
+        ## Operation callbacks
         self._oper_callbacks = {}
     def _build_header(self, msg_type, counter):
-        """
-        Build u-RPC message header.
-        When calling this function, the message counter will be updated.
+        """!
+        @brief Build u-RPC message header.
 
-        :param msg_type: Message type
-        :returns: Response stream with message header written
+        (When calling this function, the message counter will be updated)
+
+        @param msg_type Message type.
+        @param counter Name of the message counter to use.
+        @return Response stream with message header written.
         """
         res = BytesIO()
         # Magic and protocol version
@@ -52,12 +56,12 @@ class URPC(object):
             self._counters[counter] = 0
         return res
     def _marshall(self, stream, sig, objects):
-        """
-        Marshall objects into data stream
+        """!
+        @brief Marshall objects into data stream.
 
-        :param stream: Data stream
-        :param sig: Signature of objects
-        :param objects: Objects to be marshalled
+        @param stream Data stream.
+        @param sig Signature of objects.
+        @param objects Objects to be marshalled.
         """
         # Check signature
         if len(sig)!=len(objects):
@@ -71,12 +75,12 @@ class URPC(object):
             else:
                 write_data(stream, obj, obj_type)
     def _unmarshall(self, stream, sig):
-        """
-        Unmarshall objects from data stream
+        """!
+        @brief Unmarshall objects from data stream.
 
-        :param stream: Data stream
-        :param sig: Signature of objects
-        :returns: Objects in an array
+        @param stream Data stream.
+        @param sig Signature of objects.
+        @return Objects in an array.
         """
         objects = []
         # Unmarshall arguments
@@ -90,22 +94,22 @@ class URPC(object):
             objects.append(obj)
         return objects
     def _invoke_callback(self, msg_id, result):
-        """
-        Invoke and remove callback for given message ID.
+        """!
+        @brief Invoke and remove callback for given message ID.
 
-        :param msg_id: Request message ID
-        :param result: Result
+        @param msg_id Request message ID.
+        @param result Callback result.
         """
         # Invoke callback
         self._oper_callbacks[msg_id](None, result)
         # Remove callback
         del self._oper_callbacks[msg_id]
     def _handle_msg(self, req):
-        """
-        Handle received messages.
+        """!
+        @brief Handle received u-RPC message.
 
-        :param req: Request message stream
-        :returns: Response message stream
+        @param req Request message stream.
+        @return Response message stream.
         """
         # Message ID defaults to 0 (Unknown)
         msg_id = 0
@@ -135,12 +139,11 @@ class URPC(object):
             # Return stream
             return res
     def _handle_error(self, res, msg_id):
-        """
-        u-RPC error result handler.
+        """!
+        @brief u-RPC error result handler.
 
-        :param res: Response message stream
-        :param msg_id: Request message ID
-        :returns: A response message
+        @param res Response message stream.
+        @param msg_id Response message ID.
         """
         # Request message ID and error number
         req_msg_id = read_data(res, URPC_TYPE_U16)
@@ -151,12 +154,12 @@ class URPC(object):
         # Remove callback function
         del self._oper_callbacks[req_msg_id]
     def _handle_func_query(self, req, msg_id):
-        """
+        """!
         u-RPC function query handler.
 
-        :param req: Request message stream
-        :param msg_id: Request message ID
-        :returns: A response message
+        @param req Request message stream.
+        @param msg_id Request message ID.
+        @return A u-RPC response message.
         """
         # Function name
         name = read_vary(req).decode("utf-8")
@@ -170,11 +173,11 @@ class URPC(object):
         write_data(res, handle, URPC_TYPE_U16)
         return res
     def _handle_func_resp(self, res, msg_id):
-        """
-        u-RPC function query response handler.
+        """!
+        @brief u-RPC function query response handler.
 
-        :param req: Request message stream
-        :param msg_id: Request message ID
+        @param res Response message stream.
+        @param msg_id Response message ID.
         """
         # Request message ID
         req_msg_id = read_data(res, URPC_TYPE_U16)
@@ -183,12 +186,12 @@ class URPC(object):
         # Invoke callback
         self._invoke_callback(req_msg_id, handle)
     def _handle_call(self, req, msg_id):
-        """
-        u-RPC function call handler.
+        """!
+        @brief u-RPC function call handler.
 
-        :param req: Request message stream
-        :param msg_id: Request message ID
-        :returns: A response message
+        @param req Request message stream.
+        @param msg_id Request message ID.
+        @return A u-RPC response message.
         """
         # Function handle
         handle = read_data(req, URPC_TYPE_U16)
@@ -211,12 +214,11 @@ class URPC(object):
         self._marshall(res, sig_rets, result)
         return res
     def _handle_call_result(self, res, msg_id):
-        """
-        u-RPC error result handler.
+        """!
+        @brief u-RPC error result handler.
 
-        :param res: Response message stream
-        :param msg_id: Request message ID
-        :returns: A response message
+        @param res Response message stream.
+        @param msg_id Response message ID.
         """
         # Request message ID
         req_msg_id = read_data(res, URPC_TYPE_U16)
@@ -226,13 +228,15 @@ class URPC(object):
         # Invoke callback
         self._invoke_callback(req_msg_id, result)
     def add_func(self, func, arg_types=None, ret_types=None, name=None):
-        """
-        Add a function to u-RPC instance.
+        """!
+        @brief Add a function to u-RPC instance.
 
-        :param func: Function to be added
-        :param name: Name of the function (Optional)
-        :returns: Handle for the object
-        :raises URPCError: If there is no more space for the function
+        @param func Function to be added.
+        @param arg_types Signature of arguments.
+        @param ret_types Signature of return values.
+        @param name Name of the function.
+        @return Handle for the object.
+        @throws URPCError If there is no more space for the function.
         """
         # Arguments and results types
         if arg_types==None:
@@ -250,11 +254,11 @@ class URPC(object):
         # Return handle
         return handle
     def remove_func(self, handle):
-        """
-        Remove function from u-RPC instance and function lookup table.
+        """!
+        @brief Remove function from u-RPC instance and function lookup table.
 
-        :param handle: Handle for the function
-        :raises URPCError: If the handle does not correspond to a function
+        @param handle Handle for the function.
+        @throws URPCError If the handle does not correspond to a function.
         """
         # Remove function from functions store
         del self._funcs_store[handle]
@@ -262,11 +266,11 @@ class URPC(object):
         if handle in self._func_name_lookup.inv:
             del self._func_name_lookup.inv[handle]
     def query(self, func_name, callback=None):
-        """
-        Query u-RPC function handle.
+        """!
+        @brief Query u-RPC function handle.
 
-        :param func_name: Function name
-        :param callback: Called when query completed
+        @param func_name Function name.
+        @param callback Called when query completed.
         """
         # Decorator style
         if not callback:
@@ -281,14 +285,13 @@ class URPC(object):
         # Send request message
         self._send_callback(req.getvalue())
     def call(self, handle, sig_args, args, callback=None):
-        """
-        Do u-RPC call.
+        """!
+        @brief Do u-RPC call.
 
-        :param handle: Remote function handle
-        :param sig_args: Signature of arguments
-        :param args: Arguments
-        :param sig_rets: Signature of return values
-        :param callback: Called when u-RPC call completed
+        @param handle Remote function handle.
+        @param sig_args Signature of arguments.
+        @param args Arguments.
+        @param callback Called when u-RPC call completed.
         """
         # Decorator style
         if not callback:
@@ -316,10 +319,10 @@ class URPC(object):
         # Send request message
         self._send_callback(req.getvalue())
     def recv_callback(self, data):
-        """
-        Callback function for incoming u-RPC messages.
+        """!
+        @brief Callback function for incoming u-RPC messages.
 
-        :param data: u-RPC message data (in bytes)
+        @param data u-RPC message data (in bytes)
         """
         _logger.debug("Received u-RPC message: %s", data)
         # Request message stream

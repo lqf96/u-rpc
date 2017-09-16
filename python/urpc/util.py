@@ -5,40 +5,45 @@ from six.moves import range
 
 from urpc.constants import urpc_type_repr, urpc_type_size
 
-# Spare table item error prompt
+## Spare table item error prompt
 PROMPT_ERR_SPARE_TABLE_ITEM = "Index does not correspond to any value."
-# Allocation table is full
+## Full allocation table prompt
 PROMPT_ERR_TABLE_FULL = "The table is full."
 
-# Allocation table item
+## Allocation table item class
 _AllocTableItem = namedtuple("_AllocTableItem", ["spare", "next", "data"])
 
 class AllocTable(Sequence):
-    """ The allocation table data structure. """
+    """!
+    @brief The allocation table data structure.
+    """
     def __init__(self, capacity):
-        """
-        Initialize the allocation table.
+        """!
+        @brief Initialize the allocation table.
 
-        :param capacity: Maximum size of the allocation table
+        @param capacity Capacity of the allocation table.
         """
-        # Capacity and number of elements
+        ## Capacity of elements
         self._capacity = capacity
+        ## Number of elements
         self._size = 0
-        # Begin of the spare table items linked list
+        ## Begin of the spare table items linked list
         self._spare_begin = 0
-        # Internal data store
+        ## Internal data store
         self._store = [_AllocTableItem(True, i, None) for i in range(1, capacity+1)]
     def __len__(self):
-        """
-        Get number of elements in the table.
+        """!
+        @brief Get number of elements in the table.
+
+        @return Number of elements in the table.
         """
         return self._size
     def __getitem__(self, index):
-        """
-        Get value by index.
+        """!
+        @brief Get value by index.
 
-        :param index: Index of the value
-        :returns: The value
+        @param index Index of the value.
+        @return The value.
         """
         item = self._store[index]
         # Spare table item
@@ -47,11 +52,11 @@ class AllocTable(Sequence):
         # Return data
         return item.data
     def __setitem__(self, index, value):
-        """
-        Set value by index.
+        """!
+        @brief Set value by index.
 
-        :param index: Index of the value
-        :param value: New value to set
+        @param index Index of the value.
+        @param value New value to set.
         """
         item = self._store[index]
         # Spare table item
@@ -60,10 +65,10 @@ class AllocTable(Sequence):
         # Set data
         item._replace(data=value)
     def __delitem__(self, index):
-        """
-        Remove a value from the table by its index.
+        """!
+        @brief Remove a value from the table by its index.
 
-        :param index: Index of the value
+        @param index Index of the value
         """
         item = self._store[index]
         # Spare table item
@@ -75,11 +80,11 @@ class AllocTable(Sequence):
         # Update size
         self._size -= 1
     def add(self, value):
-        """
-        Add a value to the table and return its corresponding index.
+        """!
+        @brief Add a value to the table and return its corresponding index.
 
-        :param value: Value to be added
-        :returns: Index of the value
+        @param value Value to be added.
+        @return Index of the value.
         """
         # Store is full
         if self._size>=self._capacity:
@@ -94,12 +99,14 @@ class AllocTable(Sequence):
         # Return corresponding index
         return index
     def get(self, index, default=None):
-        """
-        Get value by index. Return default value for spare item.
+        """!
+        @brief Get value by index.
 
-        :param index: Index of the value
-        :param default: Default value if item is spare
-        :returns: The value
+        (Fallback to default if index corresponds with a spare item)
+
+        @param index Index of the value.
+        @param default Default value if item is spare.
+        @return The value.
         """
         item = self._store[index]
         # Spare table item; fallback to default value
@@ -110,14 +117,15 @@ class AllocTable(Sequence):
             return item.data
 
 def seq_get(seq, index, default=None):
-    """
-    Get element from sequence by index.
-    Fallback to default if index is out of range.
+    """!
+    @brief Get element from sequence by index.
 
-    :param seq: Sequence
-    :param index: Index of the element
-    :param default: Fallback default value
-    :returns Element if index is valid, otherwise default value
+    (Fallback to default if index is out of range)
+
+    @param seq Sequence.
+    @param index Index of the element.
+    @param default Fallback default value.
+    @return Element if index is valid, otherwise default value.
     """
     # Valid index
     if isinstance(index, int) and index>=0 and index<len(seq):
@@ -127,12 +135,12 @@ def seq_get(seq, index, default=None):
         return default
 
 def read_data(stream, urpc_type):
-    """
-    Read data of given type from stream.
+    """!
+    @brief Read data of given type from stream.
 
-    :param stream: Data stream
-    :param urpc_type: u-RPC data type
-    :returns: Read data in given type
+    @param stream Data stream.
+    @param urpc_type u-RPC data type.
+    @return Read data in given type.
     """
     return struct.unpack(
         urpc_type_repr[urpc_type],
@@ -140,12 +148,12 @@ def read_data(stream, urpc_type):
     )[0]
 
 def read_vary(stream, data_size_type="B"):
-    """
-    Read variable length data from stream.
+    """!
+    @brief Read variable length data from stream.
 
-    :param stream: Data stream
-    :param data_size_type: Type of data size in Python's struct module representation
-    :returns: Data in byte array
+    @param stream Data stream.
+    @param data_size_type Type of data size in Python's struct module representation.
+    @return Data in byte array.
     """
     # Read data size
     data_size_size = struct.calcsize(data_size_type)
@@ -154,11 +162,12 @@ def read_vary(stream, data_size_type="B"):
     return bytearray(stream.read(data_size))
 
 def write_data(stream, data, urpc_type):
-    """
-    Write data of given type to stream.
+    """!
+    @brief Write data of given type to stream.
 
-    :param stream: Data stream
-    :param urpc_type: u-RPC data type
+    @param stream Data stream.
+    @param data Data to write to stream.
+    @param urpc_type u-RPC data type.
     """
     stream.write(struct.pack(
         urpc_type_repr[urpc_type],
@@ -166,12 +175,12 @@ def write_data(stream, data, urpc_type):
     ))
 
 def write_vary(stream, data, data_size_type="B"):
-    """
-    Write variable length data to stream.
+    """!
+    @brief Write variable length data to stream.
 
-    :param stream: Data stream
-    :param data: Data to write to stream
-    :param data_size_type: Type of data size in Python's struct module representation
+    @param stream Data stream.
+    @param data Data to write to stream.
+    @param data_size_type Type of data size in Python's struct module representation.
     """
     data_size = len(data)
     # Data length check

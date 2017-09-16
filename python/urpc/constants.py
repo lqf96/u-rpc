@@ -1,58 +1,58 @@
 from __future__ import absolute_import, unicode_literals
 
-# u-RPC protocol magic
+## u-RPC protocol magic
 URPC_MAGIC = 10
-# u-RPC protocol version
+## u-RPC protocol version
 URPC_VERSION = 1
 
-# Error message
+## Error message
 URPC_MSG_ERROR = 0
-# Function query message
+## Function query message
 URPC_MSG_FUNC_QUERY = 1
-# Function query response message
+## Function query response message
 URPC_MSG_FUNC_RESP = 2
-# Function call message
+## Function call message
 URPC_MSG_CALL = 3
-# Function call result message
+## Function call result message
 URPC_MSG_CALL_RESULT = 4
 
-# Signed 8-bit data
+## Signed 8-bit data
 I8 = URPC_TYPE_I8 = 0x00
-# Unsigned 8-bit data
+## Unsigned 8-bit data
 U8 = URPC_TYPE_U8 = 0x01
-# Signed 16-bit data
+## Signed 16-bit data
 I16 = URPC_TYPE_I16 = 0x02
-# Signed 16-bit data
+## Unsigned 16-bit data
 U16 = URPC_TYPE_U16 = 0x03
-# Signed 32-bit data
+## Signed 32-bit data
 I32 = URPC_TYPE_I32 = 0x04
-# Unsigned 32-bit data
+## Unsigned 32-bit data
 U32 = URPC_TYPE_U32 = 0x05
-# Signed 64-bit data
+## Signed 64-bit data
 I64 = URPC_TYPE_I64 = 0x06
-# Unsigned 64-bit data
+## Unsigned 64-bit data
 U64 = URPC_TYPE_U64 = 0x07
-# Variable length data
+## Variable length data
 VARY = URPC_TYPE_VARY = 0x08
 
-# Operation successfully completed
+## Operation successfully completed
 URPC_OK = 0x00
-# Incorrect function signature
+## Incorrect function signature
 URPC_ERR_SIG_INCORRECT = 0x20
-# Nonexist handle
+## Nonexist handle
 URPC_ERR_NONEXIST = 0x21
-# Operation not supported
+## Operation not supported
 URPC_ERR_NO_SUPPORT = 0x22
-# Store is full
+## Store is full
 URPC_ERR_NO_MEMORY = 0x23
-# Broken u-RPC message
+## Broken u-RPC message
 URPC_ERR_BROKEN_MSG = 0x24
-# Function call throws exception
+## Function call throws exception
 URPC_ERR_EXCEPTION = 0x25
-# Data too long
+## Data too long
 URPC_ERR_TOO_LONG = 0x26
 
-# u-RPC type representation for struct module
+## u-RPC type representation for struct module
 urpc_type_repr = [
     "b", # URPC_TYPE_I8
     "B", # URPC_TYPE_U8
@@ -65,7 +65,7 @@ urpc_type_repr = [
     None, # URPC_TYPE_VARY
     "H", # URPC_TYPE_FUNC
 ]
-# u-RPC type to size mapping
+## u-RPC type to size mapping
 urpc_type_size = [
     1, # URPC_TYPE_I8
     1, # URPC_TYPE_U8
