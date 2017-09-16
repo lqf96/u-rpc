@@ -6,22 +6,23 @@
     #error u-RPC header file mismatch
 #endif
 
-//Private type redefitions
+/// u-RPC callback pair type
 typedef __urpc_stream_t urpc_stream_t;
+/// u-RPC data stream and buffer type
 typedef __urpc_cb_pair_t urpc_cb_pair_t;
-//u-RPC message handler type
+/// u-RPC message handler type
 typedef urpc_status_t (*urpc_msg_handler_t)(
     urpc_t*,
     urpc_stream_t*,
     uint16_t
 );
 
-//u-RPC version
+/// u-RPC version
 const static uint8_t urpc_version = URPC_VERSION;
-//u-RPC magic ("0b1010")
+/// u-RPC magic ("0b1010")
 const static uint8_t urpc_magic = 10;
 
-//u-RPC type to size mapping
+/// u-RPC type to size mapping
 const static uint8_t urpc_type_size[] = {
     1, //URPC_TYPE_I8
     1, //URPC_TYPE_U8
@@ -34,17 +35,17 @@ const static uint8_t urpc_type_size[] = {
     0, //URPC_TYPE_VARY
     2 //URPC_TYPE_FUNC
 };
-//u-RPC message handlers
+/// u-RPC message handlers
 const static urpc_msg_handler_t urpc_msg_handlers[];
 
 /**
- * Marshall objects and write marshalled data to stream
+ * @brief Marshall objects and write marshalled data to stream.
  *
- * @param self u-RPC instance
- * @param strean Stream to hold marshalled data
- * @param sig_args Arguments signature
- * @param args Arguments
- * @return Operation status code
+ * @param self u-RPC instance.
+ * @param stream Stream to hold marshalled data.
+ * @param sig_args Arguments signature.
+ * @param args Arguments.
+ * @return Error code if failed, otherwise WIO_OK.
  */
 static urpc_status_t urpc_marshall(
     urpc_t* self,
@@ -59,8 +60,6 @@ static urpc_status_t urpc_marshall(
         const void* arg = args[i];
 
         switch (type) {
-            case URPC_TYPE_CALLBACK:
-                return URPC_ERR_NO_SUPPORT;
             //Variable length data
             case URPC_TYPE_VARY: {
                 urpc_vary_t* vary_arg = (urpc_vary_t*)arg;
@@ -83,21 +82,21 @@ static urpc_status_t urpc_marshall(
 }
 
 /**
- * Unmarshall objects from input stream
+ * @brief Unmarshall objects from input stream.
  *
- * @param self u-RPC instance
- * @param in_stream Stream that provides marshalled data
- * @param out_stream Stream to store pointers to data
- * @param sig_args Arguments signature
- * @param args Unmarshalled arguments
- * @return Operation status code
+ * @param self u-RPC instance.
+ * @param in_stream Stream that provides marshalled data.
+ * @param out_stream Stream to store pointers to data.
+ * @param sig_args Arguments signature.
+ * @param _args Pointer to memory for holding pointer table to unmarshalled arguments.
+ * @return Error code if failed, otherwise WIO_OK.
  */
 static urpc_status_t urpc_unmarshall(
     urpc_t* self,
     urpc_stream_t* in_stream,
     urpc_stream_t* out_stream,
     urpc_sig_t sig_args,
-    void*** args
+    void*** _args
 ) {
     uint8_t n_args = sig_args[0];
     void** ptrs;
@@ -116,8 +115,6 @@ static urpc_status_t urpc_unmarshall(
         urpc_type_t type = sig_args[i];
 
         switch (type) {
-            case URPC_TYPE_CALLBACK:
-                return URPC_ERR_NO_SUPPORT;
             //Variable length data
             case URPC_TYPE_VARY: {
                 urpc_vary_t* vary_arg;
@@ -147,18 +144,18 @@ static urpc_status_t urpc_unmarshall(
     }
 
     //Pointers to data
-    *args = ptrs;
+    *_args = ptrs;
 
     return WIO_OK;
 }
 
 /**
- * Build u-RPC message and write to stream.
+ * @brief Build u-RPC message header and write it to stream.
  *
- * @param stream u-RPC stream
- * @param msg_type Message type
- * @param counter Message ID counter
- * @return Operation status code
+ * @param stream u-RPC stream.
+ * @param msg_type Message type.
+ * @param counter Pointer to message ID counter.
+ * @return Error code if failed, otherwise WIO_OK.
  */
 static urpc_status_t urpc_build_header(
     urpc_stream_t* stream,
@@ -178,13 +175,13 @@ static urpc_status_t urpc_build_header(
 }
 
 /**
- * Add a callback for given message ID.
+ * @brief Add a callback for given message ID.
  *
- * @param self u-RPC instance
- * @param msg_id Message ID
- * @param cb_data Callback closure data
- * @param cb Callback function
- * @return Operation status code
+ * @param self u-RPC instance.
+ * @param msg_id Message ID.
+ * @param cb_data Callback closure data.
+ * @param cb Callback function.
+ * @return WIO_ERR_NO_MEMORY if no memory available to store callback, otherwise WIO_OK.
  */
 static urpc_status_t urpc_add_callback(
     urpc_t* self,
@@ -204,16 +201,17 @@ static urpc_status_t urpc_add_callback(
         }
     }
 
-    return URPC_ERR_NO_MEMORY;
+    return WIO_ERR_NO_MEMORY;
 }
 
 /**
- * Invoke and remove callback.
+ * @brief Invoke and remove callback.
  *
- * @param self u-RPC instance
- * @param msg_id Message ID
- * @param status Operation status code
- * @param result Pointer to result data
+ * @param self u-RPC instance.
+ * @param msg_id Message ID.
+ * @param status Operation error code.
+ * @param result Pointer to operation result.
+ * @return WIO_ERR_INVALID if corresponding message is not found, otherwise WIO_OK.
  */
 static urpc_status_t urpc_invoke_callback(
     urpc_t* self,
@@ -233,9 +231,17 @@ static urpc_status_t urpc_invoke_callback(
         }
     }
 
-    return URPC_ERR_BROKEN_MSG;
+    return WIO_ERR_INVALID;
 }
 
+/**
+ * @brief Handle u-RPC error response message.
+ *
+ * @param self u-RPC instance.
+ * @param msg_stream Incoming message stream.
+ * @param msg_id Response message ID.
+ * @return Error code if failed, otherwise WIO_OK.
+ */
 static urpc_status_t urpc_handle_error(
     urpc_t* self,
     urpc_stream_t* msg_stream,
@@ -253,6 +259,14 @@ static urpc_status_t urpc_handle_error(
     return WIO_OK;
 }
 
+/**
+ * @brief Handle u-RPC function query response message.
+ *
+ * @param self u-RPC instance.
+ * @param msg_stream Incoming message stream.
+ * @param msg_id Response message ID.
+ * @return Error code if failed, otherwise WIO_OK.
+ */
 static urpc_status_t urpc_handle_func_resp(
     urpc_t* self,
     urpc_stream_t* msg_stream,
@@ -271,6 +285,14 @@ static urpc_status_t urpc_handle_func_resp(
     return WIO_OK;
 }
 
+/**
+ * @brief Handle u-RPC call result message.
+ *
+ * @param self u-RPC instance.
+ * @param msg_stream Incoming message stream.
+ * @param msg_id Response message ID.
+ * @return Error code if failed, otherwise WIO_OK.
+ */
 static urpc_status_t urpc_handle_call_result(
     urpc_t* self,
     urpc_stream_t* msg_stream,
