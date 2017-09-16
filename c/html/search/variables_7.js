@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['urpc_5ferr_5fbroken_5fmsg',['URPC_ERR_BROKEN_MSG',['../urpc_8h.html#aeb5b0231c01c3d873bfbe7c5024b0fa3',1,'urpc.h']]],
+  ['urpc_5ferr_5fexception',['URPC_ERR_EXCEPTION',['../urpc_8h.html#a569b02dc2d7108767dbe663cc63c50d0',1,'urpc.h']]],
+  ['urpc_5ferr_5fno_5fsupport',['URPC_ERR_NO_SUPPORT',['../urpc_8h.html#a2f67b0aa2e678711b6922eb982f5e1a1',1,'urpc.h']]],
+  ['urpc_5ferr_5fnonexist',['URPC_ERR_NONEXIST',['../urpc_8h.html#a22f93f77c14d0ee17e4b61b071287bb3',1,'urpc.h']]],
+  ['urpc_5ferr_5fsig_5fincorrect',['URPC_ERR_SIG_INCORRECT',['../urpc_8h.html#aa846d5e9cf03d97d951f4ed7d0cfb971',1,'urpc.h']]],
+  ['urpc_5fmagic',['urpc_magic',['../urpc_8c.html#a3cfcc242e0c136e040fcc2e54360b346',1,'urpc.c']]],
+  ['urpc_5fmsg_5fcall',['URPC_MSG_CALL',['../urpc_8h.html#abb00a3273ffea9ddc5e27eea163414e9',1,'urpc.h']]],
+  ['urpc_5fmsg_5fcall_5fresult',['URPC_MSG_CALL_RESULT',['../urpc_8h.html#a689e7ec4f58b0c2b1b792c768b4bcbc1',1,'urpc.h']]],
+  ['urpc_5fmsg_5ferror',['URPC_MSG_ERROR',['../urpc_8h.html#aa7f7bbf4fcce57797e3c2bbfd24158e2',1,'urpc.h']]],
+  ['urpc_5fmsg_5ffunc_5fquery',['URPC_MSG_FUNC_QUERY',['../urpc_8h.html#a9fbcef91b9dbc9c818bd3b21dbf367b9',1,'urpc.h']]],
+  ['urpc_5fmsg_5ffunc_5fresp',['URPC_MSG_FUNC_RESP',['../urpc_8h.html#aa462de5967a7e340a7a6895d55fe9e82',1,'urpc.h']]],
+  ['urpc_5fmsg_5fhandlers',['urpc_msg_handlers',['../urpc_8c.html#a70ffdfc417958544785ee907e660f2ac',1,'urpc.c']]],
+  ['urpc_5ftype_5fi16',['URPC_TYPE_I16',['../urpc_8h.html#a0073713574ac731d4eb454a566feb142',1,'urpc.h']]],
+  ['urpc_5ftype_5fi32',['URPC_TYPE_I32',['../urpc_8h.html#ad1e633edd1b40eb3bb789bdee61b34e3',1,'urpc.h']]],
+  ['urpc_5ftype_5fi64',['URPC_TYPE_I64',['../urpc_8h.html#a565e3108172abdddea86c769f10d4dee',1,'urpc.h']]],
+  ['urpc_5ftype_5fi8',['URPC_TYPE_I8',['../urpc_8h.html#a3ba2a5c9259f2cadf184f3727240d885',1,'urpc.h']]],
+  ['urpc_5ftype_5fsize',['urpc_type_size',['../urpc_8c.html#ae3ad5d2519a107d64958d71f09dd769a',1,'urpc.c']]],
+  ['urpc_5ftype_5fu16',['URPC_TYPE_U16',['../urpc_8h.html#a367a22355a1d93bc4ac7563caee28f75',1,'urpc.h']]],
+  ['urpc_5ftype_5fu32',['URPC_TYPE_U32',['../urpc_8h.html#afa5bd55a8e72dbcc22934a5e074805e0',1,'urpc.h']]],
+  ['urpc_5ftype_5fu64',['URPC_TYPE_U64',['../urpc_8h.html#adef4eacfb092741b1dd1780f81ccf8bc',1,'urpc.h']]],
+  ['urpc_5ftype_5fu8',['URPC_TYPE_U8',['../urpc_8h.html#a004330dae51028c068c12bd484c04b00',1,'urpc.h']]],
+  ['urpc_5ftype_5fvary',['URPC_TYPE_VARY',['../urpc_8h.html#a39fef38d937343b4657602941082dce5',1,'urpc.h']]],
+  ['urpc_5fversion',['urpc_version',['../urpc_8c.html#ac6c603b622255bef7c889170d22954c0',1,'urpc.c']]]
+];

@@ -1,0 +1,25 @@
+var searchData=
+[
+  ['u16',['U16',['../namespaceurpc_1_1constants.html#abf7d2d8ef4040e118fe02830c4c4afde',1,'urpc::constants']]],
+  ['u32',['U32',['../namespaceurpc_1_1constants.html#a183ea180268e1e4da2a89fb5b30157eb',1,'urpc::constants']]],
+  ['u64',['U64',['../namespaceurpc_1_1constants.html#ab8b446539783888e1b95d0cb7a32e897',1,'urpc::constants']]],
+  ['u8',['U8',['../namespaceurpc_1_1constants.html#a144c6173b349458223e72616fa2cfde6',1,'urpc::constants']]],
+  ['underlying_5ftype',['underlying_type',['../classurpc_1_1misc_1_1_string_type.html#a079804612b2fce9b4bbf5f39421a6183',1,'urpc::misc::StringType']]],
+  ['urpc_5ferr_5fbroken_5fmsg',['URPC_ERR_BROKEN_MSG',['../namespaceurpc_1_1constants.html#a4f9d80624a04143bf09e8679100a6c7d',1,'urpc::constants']]],
+  ['urpc_5ferr_5fexception',['URPC_ERR_EXCEPTION',['../namespaceurpc_1_1constants.html#ada143bec0eec5a1d7429e915e9cb3024',1,'urpc::constants']]],
+  ['urpc_5ferr_5fno_5fmemory',['URPC_ERR_NO_MEMORY',['../namespaceurpc_1_1constants.html#a168138d9cf1faab251583e3e6fc0076e',1,'urpc::constants']]],
+  ['urpc_5ferr_5fno_5fsupport',['URPC_ERR_NO_SUPPORT',['../namespaceurpc_1_1constants.html#afaf823c31053d3e3bdadb0aadd253015',1,'urpc::constants']]],
+  ['urpc_5ferr_5fnonexist',['URPC_ERR_NONEXIST',['../namespaceurpc_1_1constants.html#ac2c1184b0409c48b13d4d0a09c45db80',1,'urpc::constants']]],
+  ['urpc_5ferr_5fsig_5fincorrect',['URPC_ERR_SIG_INCORRECT',['../namespaceurpc_1_1constants.html#a249ec0fb52686a7932d4e41daa4df6fb',1,'urpc::constants']]],
+  ['urpc_5ferr_5ftoo_5flong',['URPC_ERR_TOO_LONG',['../namespaceurpc_1_1constants.html#ad4480d5f82552fcc3c7b182f2a4f1d26',1,'urpc::constants']]],
+  ['urpc_5fmagic',['URPC_MAGIC',['../namespaceurpc_1_1constants.html#afab81236ce09d312e43e82669f2dbcc5',1,'urpc::constants']]],
+  ['urpc_5fmsg_5fcall',['URPC_MSG_CALL',['../namespaceurpc_1_1constants.html#a6d44af592237f5034ca2b8d85f7cd7be',1,'urpc::constants']]],
+  ['urpc_5fmsg_5fcall_5fresult',['URPC_MSG_CALL_RESULT',['../namespaceurpc_1_1constants.html#a5d54616f8d9aa30302c2f307b6e844b2',1,'urpc::constants']]],
+  ['urpc_5fmsg_5ferror',['URPC_MSG_ERROR',['../namespaceurpc_1_1constants.html#ab5e08660d7f16075895ee2d3770c281f',1,'urpc::constants']]],
+  ['urpc_5fmsg_5ffunc_5fquery',['URPC_MSG_FUNC_QUERY',['../namespaceurpc_1_1constants.html#a04e3fabc190c0291fa19c5d3034f95ff',1,'urpc::constants']]],
+  ['urpc_5fmsg_5ffunc_5fresp',['URPC_MSG_FUNC_RESP',['../namespaceurpc_1_1constants.html#ad0e04572fcf751af25b5bb483c9e65f0',1,'urpc::constants']]],
+  ['urpc_5fok',['URPC_OK',['../namespaceurpc_1_1constants.html#a0b89717eee9229d1f25235fc415d5a7f',1,'urpc::constants']]],
+  ['urpc_5ftype_5frepr',['urpc_type_repr',['../namespaceurpc_1_1constants.html#a8c2c1b8267c42e0f56dc621282bc5753',1,'urpc::constants']]],
+  ['urpc_5ftype_5fsize',['urpc_type_size',['../namespaceurpc_1_1constants.html#a3d61fdf88a6d07006e9a4493eaa98a52',1,'urpc::constants']]],
+  ['urpc_5fversion',['URPC_VERSION',['../namespaceurpc_1_1constants.html#a4ccc42015a8622ecb37beb585b35ca46',1,'urpc::constants']]]
+];
