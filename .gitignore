@@ -18,6 +18,9 @@ dist
 *.o
 # Static library
 *.a
+# Dynamic library
+*.so
+*.dylib
 
 # Documents (Only in master branch)
 docs
