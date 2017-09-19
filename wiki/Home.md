@@ -26,4 +26,4 @@ The API descriptions are written in Javadoc-like format and the documentation is
 * [Python API](https://lqf96.github.io/u-rpc/python/html/index.html)
 
 ## License
-The project is licensed under [3-Clause BSD License](https://github.com/lqf96/u-rpc/tree/master/LICENSE).
+The project is licensed under [BSD 2-Clause License](https://github.com/lqf96/u-rpc/tree/master/LICENSE).

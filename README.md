@@ -11,4 +11,4 @@ The u-RPC Remote Procedure Call framework
 * [Python API](https://lqf96.github.io/u-rpc/python/html/index.html)
 
 ## License
-[3-Clause BSD License](LICENSE)
+[BSD 2-Clause License](LICENSE)
