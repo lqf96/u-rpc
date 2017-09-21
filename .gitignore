@@ -22,5 +22,5 @@ dist
 *.so
 *.dylib
 
-# Documents (Only in master branch)
-docs
+# Generated documents
+.docs

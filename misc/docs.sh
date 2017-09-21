@@ -4,7 +4,7 @@ REPO_URL="ssh://github.com/lqf96/u-rpc"
 REPO_BRANCH="gh-pages"
 
 # Source
-SOURCE_DIR="../docs"
+SOURCE_DIR="../.docs"
 
 # Before upload hook
 before_upload_hook() {
